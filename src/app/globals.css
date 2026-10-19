@@ -1,26 +1,40 @@
 @import "tailwindcss";
 
+/* Design tokens. Mirrored for the 3D scene in src/design/tokens.ts; change both together. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --gallery: #f3f3f1;
+  --gallery-shade: #e4e5e3;
+  --ink: #111111;
+  --ink-2: #5b5d60;
+  --ink-3: #9a9c9f;
+  --line: #d3d4d2;
+  --region-buildings: #d63a2f;
+  --region-applications: #f0be2a;
+  --region-infra: #1f4e9e;
+  /* Helvetica Neue needs a web licence for non-Apple devices; until then this stack falls back. */
+  --font-helvetica: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-gallery: var(--gallery);
+  --color-gallery-shade: var(--gallery-shade);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-region-buildings: var(--region-buildings);
+  --color-region-applications: var(--region-applications);
+  --color-region-infra: var(--region-infra);
+  --font-sans: var(--font-helvetica);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* The gallery is a single light world by design; no dark palette yet. */
+html {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--gallery);
+  color: var(--ink);
+  font-family: var(--font-helvetica);
 }

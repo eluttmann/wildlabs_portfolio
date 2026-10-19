@@ -1,0 +1,15 @@
+# Wild Labs Portfolio
+
+AI-native 3D portfolio replacing ericluttmann.com and wildeylabs.com. The plan and milestones are in `docs/PLAN.md`.
+
+@AGENTS.md
+
+## Conventions
+- **Next.js 16 App Router** (read `node_modules/next/dist/docs/` before using unfamiliar APIs; it differs from older versions).
+- **pnpm only.** Ask before adding dependencies.
+- **3D is client-only.** Load R3F scenes with `next/dynamic(..., { ssr: false })` from a client component.
+- **One content source:** `src/content/projects.ts` feeds 2D, 3D and the chat. The chat must never invent facts that aren't in it.
+- **Tokens:** CSS in `src/app/globals.css`, mirrored for three.js in `src/design/tokens.ts`. Change both together; never hardcode hex in components.
+- **Type:** Helvetica Neue stack only. **Colour:** one Kelly colour per region (Buildings red, Applications yellow, Infra blue) on gallery white.
+- **Layouts** for the Structure Lab live in `src/lab/layouts.ts` as pure functions (content → positions, sizes, camera, guides).
+- Never render `+`, `−` or `≈` on figures in UI copy; say it in words.

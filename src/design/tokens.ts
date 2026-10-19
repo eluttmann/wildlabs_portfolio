@@ -1,0 +1,25 @@
+/**
+ * Design tokens shared by the DOM (mirrored in globals.css) and the 3D scene.
+ * Palette direction: Ellsworth Kelly colour fields on a cool gallery white.
+ * One colour per region; everything else stays neutral.
+ */
+import type { Region } from "@/content/projects";
+
+export const color = {
+  gallery: "#F3F3F1",
+  galleryShade: "#E4E5E3",
+  ink: "#111111",
+  ink2: "#5B5D60",
+  ink3: "#9A9C9F",
+  line: "#D3D4D2",
+} as const;
+
+export const regionColor: Record<Region, string> = {
+  buildings: "#D63A2F", // Kelly red
+  applications: "#F0BE2A", // Kelly yellow
+  infra: "#1F4E9E", // Kelly blue
+};
+
+export const font = {
+  sans: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+} as const;
