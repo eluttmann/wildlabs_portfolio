@@ -11,6 +11,7 @@ camera and composes the interface. A 2D "museum gallery" mode shows the same con
 - **Running budget:** $100 per month total for every API and hosting cost.
 - **Repo:** `github.com/eluttmann/wildlabs_portfolio` (private)
 - **Live (prototype):** https://wildlabs-portfolio.vercel.app (Vercel project `luttmann/wildlabs-portfolio`)
+- **Tracking:** this file is the source of truth for milestones and progress. Linear gets connected later, when day-to-day tasks outgrow a checklist.
 - **Status (Oct 20):** M0 foundations mostly done, M1 Structure Lab built and deployed; next up are the world-model spikes and the structure review. See the [progress log](#9-progress-log).
 
 ---
