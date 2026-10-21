@@ -250,6 +250,7 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 - Deployed `main` to production at https://wildlabs-portfolio.vercel.app and confirmed it renders, with no page errors.
 - Chose the Vercel OIDC token for local AI Gateway auth instead of an API key.
 - Opened the dev setup PR: check scripts, CI, Claude Code settings, `.mcp.json`, starter icons removed.
+- CI caught a clean-checkout bug on its first run (`LayoutProps` types missing); fixed with `next typegen` before `tsc`. PR #2 green.
 
 ### Oct 19, 2026
 - Ran the jam and communication pass: two-tier world strategy (pre-generated World Labs worlds as the base, live Odyssey moments as options), Powers of Ten information architecture, and regions Buildings / Applications / Infra.
@@ -257,8 +258,24 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 - Published the "calm field" concept mockup (since removed from the gallery).
 
 ### Next up
-1. Add the remaining API keys (Gemini, Google Map Tiles, Odyssey, NVIDIA, Mapbox).
-2. Merge the dev setup PR.
+1. Merge the dev setup PR (#2).
+2. Add the remaining API keys (Gemini, Google Map Tiles, Odyssey, NVIDIA, Mapbox).
 3. M1 review: Eric picks the home world and lenses → `docs/decisions/001-structure.md`.
-4. First spike: generate the Yosemite world from the El Capitan panorama through the World API → SPZ → Spark in R3F.
-5. Eric sends the San Francisco, Venice Beach and Rio photos.
+4. Eric sends the San Francisco, Venice Beach and Rio photos.
+
+## 10. Parallel tracks
+
+Run each track in its own Claude Code session, in its own git worktree and branch, so sessions never edit the same files.
+
+| Track | Branch | Worktree folder | Owns these paths |
+|---|---|---|---|
+| A. Yosemite world spike | `spike/marble-yosemite` | `~/build/wildlabs_portfolio-yosemite` | `scripts/spikes/`, `src/app/spikes/`, `src/components/spikes/`, `docs/spikes/marble-yosemite.md`, `public/worlds/` |
+| B. wildlabs-mcp server | `feat/wildlabs-mcp` | `~/build/wildlabs_portfolio-mcp` | `mcp/`, `src/lib/worldlabs/`, `.mcp.json`, `docs/spikes/wildlabs-mcp.md` |
+| C. Phone camera + M1 review prep | `feat/m1-portrait-review` | `~/build/wildlabs_portfolio-m1` | `src/components/lab/`, `src/lab/`, `docs/decisions/001-structure.md` |
+
+**Rules for every track**
+- Start from an up-to-date `main` (after PR #2 merges).
+- Stay inside your owned paths. If you need to touch another track's paths, stop and say so in the PR.
+- **Don't edit `docs/PLAN.md`.** Put findings in your own `docs/` file and the PR description; the plan is updated after merges.
+- Ask before adding dependencies or spending credits beyond what the track's prompt allows.
+- Run `pnpm check` before opening the PR. Open it as a draft PR into `main`.
