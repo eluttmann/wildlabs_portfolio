@@ -6,7 +6,9 @@ AI-native 3D portfolio replacing ericluttmann.com and wildeylabs.com. The plan a
 
 ## Conventions
 - **Next.js 16 App Router** (read `node_modules/next/dist/docs/` before using unfamiliar APIs; it differs from older versions).
-- **pnpm only.** Ask before adding dependencies.
+- **pnpm only.** Ask before adding dependencies. Run `pnpm check` (typecheck, lint, build) before opening a PR; CI runs the same on every PR.
+- **Branches:** `<type>/<scope>` (e.g. `feat/home-world`, `spike/marble-splats`), one PR each. Merging to `main` deploys production.
+- **AI Gateway auth:** local dev uses `VERCEL_OIDC_TOKEN` from `vercel link`; never add a provider key or print secrets.
 - **3D is client-only.** Load R3F scenes with `next/dynamic(..., { ssr: false })` from a client component.
 - **One content source:** `src/content/projects.ts` feeds 2D, 3D and the chat. The chat must never invent facts that aren't in it.
 - **Tokens:** CSS in `src/app/globals.css`, mirrored for three.js in `src/design/tokens.ts`. Change both together; never hardcode hex in components.

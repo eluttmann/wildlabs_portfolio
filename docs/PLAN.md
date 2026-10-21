@@ -121,9 +121,9 @@ Dates assume a start on Mon Oct 20, 2026.
 - [ ] API keys in `.env.local` (see `.env.example`):
   - [x] World Labs (verified: read-only list call returns 200, wrong key returns 401)
   - [x] Vercel OIDC token (added by `vercel link`, lets local dev reach AI Gateway; expires after about 12 hours)
-  - [ ] AI Gateway key `wildlabs-local` ($15 per month cap, 90-day expiry) for terminal scripts and `wildlabs-mcp`
+  - [x] AI Gateway auth: **decided Oct 20 to use the Vercel OIDC token** for local dev (no key). Create a capped `wildlabs-local` key only if `wildlabs-mcp` or long-running scripts need one.
   - [ ] Gemini (Nano Banana), Google Map Tiles, Odyssey, NVIDIA, Mapbox
-- [ ] Dev setup PR: check scripts, CI, Claude Code settings, `.mcp.json`, remove unused starter icons
+- [x] Dev setup PR: `pnpm typecheck` / `pnpm check`, GitHub Actions check on every PR, Claude Code settings, `.mcp.json` (Vercel MCP), unused starter icons removed
 - [ ] Spike each world model and record cost, speed and quality in `docs/spikes/`:
   - [ ] Marble world from the Yosemite panorama → SPZ → Spark in R3F
   - [ ] Google 3D Tiles fly-in over San Francisco in R3F
@@ -248,6 +248,8 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 - Verified the World Labs key. Found that World Labs has a full World API (generation, export, credits), which reverses the "manual export" risk. 7,000 API credits are available.
 - Created the Vercel project `luttmann/wildlabs-portfolio`, linked the local repo, connected GitHub and set a $15-per-month AI Gateway budget.
 - Deployed `main` to production at https://wildlabs-portfolio.vercel.app and confirmed it renders, with no page errors.
+- Chose the Vercel OIDC token for local AI Gateway auth instead of an API key.
+- Opened the dev setup PR: check scripts, CI, Claude Code settings, `.mcp.json`, starter icons removed.
 
 ### Oct 19, 2026
 - Ran the jam and communication pass: two-tier world strategy (pre-generated World Labs worlds as the base, live Odyssey moments as options), Powers of Ten information architecture, and regions Buildings / Applications / Infra.
@@ -255,8 +257,8 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 - Published the "calm field" concept mockup (since removed from the gallery).
 
 ### Next up
-1. Create the AI Gateway key `wildlabs-local` and add the remaining API keys.
-2. Finish the dev setup PR (scripts, CI, Claude Code settings, `.mcp.json`).
+1. Add the remaining API keys (Gemini, Google Map Tiles, Odyssey, NVIDIA, Mapbox).
+2. Merge the dev setup PR.
 3. M1 review: Eric picks the home world and lenses → `docs/decisions/001-structure.md`.
 4. First spike: generate the Yosemite world from the El Capitan panorama through the World API → SPZ → Spark in R3F.
 5. Eric sends the San Francisco, Venice Beach and Rio photos.
