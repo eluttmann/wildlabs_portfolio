@@ -10,6 +10,9 @@ camera and composes the interface. A 2D "museum gallery" mode shows the same con
 - **Timeline:** about one month (Oct 20 – Nov 17, 2026). Quality and high fidelity come before speed.
 - **Running budget:** $100 per month total for every API and hosting cost.
 - **Repo:** `github.com/eluttmann/wildlabs_portfolio` (private)
+- **Live (prototype):** https://wildlabs-portfolio.vercel.app (Vercel project `luttmann/wildlabs-portfolio`)
+- **Tracking:** this file is the source of truth for milestones and progress. Linear gets connected later, when day-to-day tasks outgrow a checklist.
+- **Status (Oct 20):** M0 foundations mostly done, M1 Structure Lab built and deployed; next up are the world-model spikes and the structure review. See the [progress log](#9-progress-log).
 
 ---
 
@@ -83,19 +86,19 @@ organized on: regions become districts of the city, and orbs sit at viewpoints.
 | Physics (walk mode) | `@react-three/rapier` | Only if walk mode survives prototyping |
 | AI | AI SDK 7 (`ai`) through Vercel AI Gateway | Streaming generative UI with tool calls |
 | Styling | Tailwind v4 + CSS tokens (`src/app/globals.css`, `src/design/tokens.ts`) | One token source for DOM and 3D |
-| Hosting | Vercel (preview per branch); Render only if a long-lived GPU proxy is needed | Vercel Functions support streaming and WebSockets |
+| Hosting | Vercel project `luttmann/wildlabs-portfolio`, connected to GitHub (production from `main`, a preview per branch); Render only if a long-lived GPU proxy is needed | Vercel Functions support streaming and WebSockets |
 | Assets | Vercel Blob or Cloudflare R2 behind a CDN | Splat files are large (tens of MB) |
 
 ### World models: what each one is for
 
 | Model | Status (Oct 2026) | Role here |
 |---|---|---|
-| **World Labs Marble** | Exports Gaussian splats (SPZ/PLY) and meshes on paid plans. No confirmed export API, so export may be manual. | **Primary.** Generates every walkable world from Eric's photos. |
+| **World Labs Marble** | Full **World API** (`api.worldlabs.ai`, header `WLT-Api-Key`): generate worlds from text, images, panoramas or video; poll operations; export PLY splats or meshes; check credits. Spec: [openapi.yaml](https://docs.worldlabs.ai/api/reference/openapi.yaml). Key verified Oct 20; 7,000 API credits on the account. | **Primary.** Generates every walkable world from Eric's photos, scripted from the terminal and `wildlabs-mcp`. |
 | **Odyssey-2 Pro / Max** | Public developer API, real-time interactive video at ~720p, ~20 fps | **Opt-in live moment** inside a project ("imagine this live"). Costs per session, so capped. |
-| **NVIDIA Cosmos** | Open-weight world foundation models (server GPU) | **Offline content**: generated video for project scenes and transitions. |
+| **NVIDIA Cosmos** | Open-weight world foundation models (server GPU). Not on AI Gateway. | **Probably replaced** by Veo 3.1 or Kling through AI Gateway for transition clips; revisit only if those fall short. |
 | **Google Project Genie** | Research prototype, no developer API | **Watch list.** Use only for reference or capture until an API exists. |
 | **NVIDIA Omniverse** | Desktop and cloud-streaming platform | **Out of scope** for the web runtime. Possible authoring tool. |
-| **Nano Banana (Gemini image)** | Gemini API | Fills environment and texture gaps, makes stylized stills and images for 2D mode. |
+| **Nano Banana (Gemini image)** | Through **AI Gateway** (`google/gemini-3.1-flash-image` and siblings); no Gemini key | Fills environment and texture gaps, makes stylized stills and images for 2D mode. See `docs/briefs/rendering.md`. |
 | **Google Photorealistic 3D Tiles** | Map Tiles API | San Francisco aerial establishing shot. Attribution required, no caching or modifying tiles. |
 
 ### Performance budget
@@ -113,7 +116,15 @@ Dates assume a start on Mon Oct 20, 2026.
 - [x] Repo scaffolded: Next.js 16, R3F, drei, Spark, AI SDK, Tailwind v4, pnpm
 - [x] Typed content model for the nine existing projects (`src/content/projects.ts`)
 - [x] `/` runs the **Structure Lab**: all six spatial layouts, switchable live
-- [ ] Eric adds API keys to `.env.local` (see `.env.example`)
+- [x] Toolchain pinned: Node 24 (`.nvmrc` plus enforced `engines`), pnpm 11, Vercel CLI 64.7 (branch `chore/dev-setup`)
+- [x] Vercel project created and linked, GitHub connected, `main` deployed to production
+- [x] AI Gateway budget: $15 per month on the project
+- [ ] API keys in `.env.local` (see `.env.example`):
+  - [x] World Labs (verified: read-only list call returns 200, wrong key returns 401)
+  - [x] Vercel OIDC token (added by `vercel link`, lets local dev reach AI Gateway; expires after about 12 hours)
+  - [x] AI Gateway auth: **decided Oct 20 to use the Vercel OIDC token** for local dev (no key). Create a capped `wildlabs-local` key only if `wildlabs-mcp` or long-running scripts need one.
+  - [ ] Google Map Tiles, Odyssey (Mapbox optional). Gemini and NVIDIA keys are no longer needed: Nano Banana and video models run through AI Gateway.
+- [x] Dev setup PR: `pnpm typecheck` / `pnpm check`, GitHub Actions check on every PR, Claude Code settings, `.mcp.json` (Vercel MCP), unused starter icons removed
 - [ ] Spike each world model and record cost, speed and quality in `docs/spikes/`:
   - [ ] Marble world from the Yosemite panorama → SPZ → Spark in R3F
   - [ ] Google 3D Tiles fly-in over San Francisco in R3F
@@ -133,6 +144,8 @@ Six structures, prototyped in one sandbox with a switcher (`src/lab/layouts.ts`)
 6. **Semantic field:** similarity-driven clusters that re-form around a question
 
 - [x] Rough versions of all six with smooth transitions between them
+- [x] Screenshot QA on desktop and phone (no page errors); live at https://wildlabs-portfolio.vercel.app
+- [ ] Portrait camera for phones (Powers of Ten orbs read small)
 - [ ] Each one placed in the San Francisco territory (map outline) to judge how it fits the landscape
 - [ ] Review session with Eric and pick a **home world (default)** plus **lenses**
 - **Exit:** a written decision in `docs/decisions/001-structure.md`
@@ -173,8 +186,9 @@ Three options, prototyped, then pick one:
 - [ ] Search and social: Open Graph images per project, server-rendered 2D content
 
 ### M7: Deploy and launch (Nov 14 – 17)
-- [ ] Vercel preview per branch, production on `ericluttmann.com`, with `wildeylabs.com` redirected or mirrored
-- [ ] API spend caps and alerts at $100 per month total
+- [x] Vercel preview per branch and production deploys from `main` (set up early, Oct 20)
+- [ ] Production on `ericluttmann.com`, with `wildeylabs.com` redirected or mirrored
+- [ ] API spend caps and alerts at $100 per month total (AI Gateway $15 done; Odyssey, Google and Gemini caps to set)
 - [ ] Analytics (Vercel Web Analytics) and an error budget
 - [ ] Launch checklist and announcement assets
 
@@ -184,12 +198,12 @@ Hard caps are enforced in code (per-day counters) and in each provider's dashboa
 
 | Item | Plan | Monthly cap |
 |---|---|---|
-| Vercel | Pro (needed for commercial use and higher limits) | $20 |
-| World Labs Marble | Standard during build (splat export); Pro only if mesh export is needed. Verify current pricing. | $20–35, build months only |
-| AI Gateway (chat LLM) | Pay as you go, small model by default | $15 |
+| Vercel | Hobby today (personal, non-commercial); move to Pro if wildeylabs.com sells services | $0 now, $20 on Pro |
+| World Labs (World API credits) | 7,000 credits on the account; check cost per world on the [pricing page](https://docs.worldlabs.ai/api/pricing.md) before generating | $20–35, build months only |
+| AI Gateway (chat LLM) | Pay as you go, small model by default. **Budget set: $15 per month on the project.** | $15 |
 | Odyssey live sessions | Opt-in only, short sessions, daily cap | $15 |
 | Google Map Tiles | Within the free monthly usage where possible | $10 |
-| Nano Banana / Cosmos | Build-time generation only | $5–10 |
+| Nano Banana / video (via AI Gateway) | Build-time generation only, inside the AI Gateway budget and free tier | included above |
 | Asset CDN (Blob or R2) | Splat storage and delivery | $5 |
 
 After launch, World Labs can be paused, because worlds are exported once and served as static files.
@@ -208,7 +222,9 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 
 | Risk | Mitigation |
 |---|---|
-| World Labs has no export API, so generation is manual | Keep the asset pipeline simple: export once and upload through `wildlabs-mcp` |
+| ~~World Labs has no export API, so generation is manual~~ | **Resolved Oct 20:** the World API generates and exports worlds programmatically |
+| Running out of World Labs credits mid-build | Check the credits endpoint before each batch; generate drafts with `marble-1.1`, finals with `marble-1.1-plus` |
+| Prototype URL is public | Fine for now; don't share widely until the home world exists. Password protection needs Vercel Pro. |
 | Live world-model cost or latency | Opt-in only, a daily cap, and a graceful fallback to a pre-rendered clip |
 | Phone performance with splats, glass and post-processing | Mobile-tier assets, a capped device pixel ratio, quality tiers, offering 2D first |
 | Helvetica Neue web licensing | Licence Helvetica Neue or Neue Haas Grotesk through Monotype, or use the system stack (falls back to Arial) |
@@ -223,3 +239,59 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 - **Project dates** for the braid and timeline: the current order is approximate.
 - **Marble client name** (not stated on the current site).
 - Photos for San Francisco, Venice Beach and Rio (coming from Eric).
+- **Home world structure:** which of the six layouts becomes the default, and which become lenses (M1 review).
+
+## 9. Progress log
+
+### Oct 20, 2026
+- Merged PR #1 (M0 foundations and the M1 Structure Lab) into `main`, deleted the `m0-foundations` branch, and started `chore/dev-setup`.
+- Pinned the toolchain: Node 24 and pnpm 11 enforced, `@types/node` 24, and the Vercel CLI updated from 58.4 to 64.7.
+- Verified the World Labs key. Found that World Labs has a full World API (generation, export, credits), which reverses the "manual export" risk. 7,000 API credits are available.
+- Created the Vercel project `luttmann/wildlabs-portfolio`, linked the local repo, connected GitHub and set a $15-per-month AI Gateway budget.
+- Deployed `main` to production at https://wildlabs-portfolio.vercel.app and confirmed it renders, with no page errors.
+- Chose the Vercel OIDC token for local AI Gateway auth instead of an API key.
+- Opened the dev setup PR: check scripts, CI, Claude Code settings, `.mcp.json`, starter icons removed.
+- CI caught a clean-checkout bug on its first run (`LayoutProps` types missing); fixed with `next typegen` before `tsc`. PR #2 green.
+
+### Oct 19, 2026
+- Ran the jam and communication pass: two-tier world strategy (pre-generated World Labs worlds as the base, live Odyssey moments as options), Powers of Ten information architecture, and regions Buildings / Applications / Infra.
+- Created the private repo, this plan, the typed content model for nine projects, and the Structure Lab with six spatial layouts.
+- Published the "calm field" concept mockup (since removed from the gallery).
+
+### Next up
+1. Merge the dev setup PR (#2).
+2. Add the remaining API keys (Google Map Tiles, Odyssey; Mapbox optional).
+3. M1 review: Eric picks the home world and lenses → `docs/decisions/001-structure.md`.
+4. Eric sends the San Francisco, Venice Beach and Rio photos.
+
+## 10. Parallel tracks
+
+Run each track in its own Claude Code session, in its own git worktree and branch, so sessions never edit the same files.
+
+| Track | Branch | Worktree folder | Owns these paths |
+|---|---|---|---|
+| A. Yosemite world spike → **now the rendering session** (brief: `docs/briefs/rendering.md`) | `spike/marble-yosemite` | `~/build/wildlabs_portfolio-yosemite` | `scripts/render/`, `src/app/spikes/`, `src/components/spikes/`, `docs/renders/`, `public/renders/` |
+| B. wildlabs-mcp server | `feat/wildlabs-mcp` | `~/build/wildlabs_portfolio-mcp` | `mcp/`, `src/lib/worldlabs/`, `.mcp.json`, `docs/spikes/wildlabs-mcp.md` |
+| C. Phone camera + M1 review prep | `feat/m1-portrait-review` | `~/build/wildlabs_portfolio-m1` | `src/components/lab/`, `src/lab/`, `docs/decisions/001-structure.md` |
+
+**Rules for every track**
+- Start from an up-to-date `main` (after PR #2 merges).
+- Stay inside your owned paths. If you need to touch another track's paths, stop and say so in the PR.
+- **Don't edit `docs/PLAN.md`.** Put findings in your own `docs/` file and the PR description; the plan is updated after merges.
+- Ask before adding dependencies or spending credits beyond what the track's prompt allows.
+- Run `pnpm check` before opening the PR. Open it as a draft PR into `main`.
+
+## 11. Decisions
+
+| Date | Decision | Why |
+|---|---|---|
+| Oct 19 | Two-tier worlds: pre-generated World Labs splats as the base, live Odyssey moments as options | Genie has no API; Cosmos and Omniverse can't run in a browser |
+| Oct 19 | Powers of Ten information architecture with regions Buildings / Applications / Infra | Eric's sketch plus the Powers of Ten layout |
+| Oct 20 | `docs/PLAN.md` is the tracker; Linear later | One source of truth, versioned with the code |
+| Oct 20 | **All AI models through Vercel AI Gateway**; direct keys only for World Labs, Odyssey, Google Map Tiles | One credential, model switching, fallbacks, one budget and log, no markup |
+| Oct 20 | Local AI auth with the Vercel OIDC token (`vercel link`), no Gateway API key | Nothing to create or rotate; refresh about every 12 hours |
+| Oct 20 | Nano Banana via AI Gateway; no Gemini key. Video clips via Veo or Kling on the Gateway instead of Cosmos | Fewer accounts and keys; same budget |
+| Oct 20 | Stay on the AI Gateway free tier; $15 per month is a cap, not a fee | Buying credits ends the monthly free credit |
+| Oct 20 | Keep model IDs in one config file (`src/lib/ai/models.ts`, created in M2) | Low lock-in; one-line model swaps |
+| Oct 21 | Rendering work runs as its own session from `docs/briefs/rendering.md` (absorbs Track A) | Focused context for World Labs and Nano Banana |
+
