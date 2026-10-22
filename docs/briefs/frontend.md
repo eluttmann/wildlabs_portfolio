@@ -72,10 +72,9 @@ don't build your own splat loader.
 - All AI calls go through Vercel AI Gateway with plain `provider/model` strings. Don't add provider packages.
 - Local auth is `VERCEL_OIDC_TOKEN` in `.env.local` (refresh with `vercel link`, about every 12 hours).
   Deployments authenticate automatically.
-- **The free tier only covers a subset of models.** The rendering session found every Nano Banana model
-  returns 403 "Free tier users do not have access to this model", and the free credit needed a card on file.
-  Check the chat model is on the free list (https://vercel.com/ai-gateway/models?freeTier=true) or ask Eric
-  before relying on a paid one. Budget cap: $15 per month on the project.
+- **Paid tier (since Oct 21):** Eric bought AI Gateway credit, so the full catalog is available. Spend is
+  capped by the project budget ($15 per month at the time of writing); keep the chat on a small, fast model
+  and confirm the choice with Eric. Verified: a request to `anthropic/claude-haiku-5.5` returned 200.
 - Read the version-matched AI SDK docs in `node_modules/ai/docs/` before writing `useChat` or tool code;
   this is AI SDK 7 and Next.js 16, which differ from older patterns.
 
