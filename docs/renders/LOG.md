@@ -37,3 +37,6 @@ soften the sun, add haze, remove the cars.
 | Date | Tool · model | Input | Prompt | Cost | Time | Output | Verdict |
 |---|---|---|---|---|---|---|---|
 | Oct 21 | AI Gateway · `google/gemini-3.1-flash-image` | `tiles/people_cars.png` | Remove people, bottle, frisbee, marker post, cars, RVs; fill with meadow and tree line | None (failed) | — | — | **Blocked:** Gateway returned 403 `customer_verification_required` ("requires a valid credit card on file … to unlock your free credits"). Needs a card on the Vercel team. |
+| Oct 21 | AI Gateway · `google/gemini-3.1-flash-image` | `tiles/people_cars.png` | Same | None (failed) | — | — | Card added; free credit active. **Blocked:** 403 `RestrictedModelsError`, "Free tier users do not have access to this model." |
+| Oct 21 | AI Gateway · `google/gemini-2.5-flash-image` | `tiles/sun.png` | Soften starburst into a diffuse hazy sun | None (failed) | — | — | Same 403: not on the free tier. |
+| Oct 21 | AI Gateway · `google/gemini-3.1-flash-lite-image` | `tiles/sun.png` | Same | None (failed) | — | — | Same 403: no Nano Banana model is on the free tier. |

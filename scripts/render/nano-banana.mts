@@ -1,7 +1,7 @@
 // Nano Banana (Gemini image) through Vercel AI Gateway. Auth: VERCEL_OIDC_TOKEN from .env.local.
 //
 //   node --env-file=.env.local scripts/render/nano-banana.mts \
-//     --out <file.png> [--ref <image>]... [--aspect 4:3] [--size 2K] [--model <id>] --prompt "<text>"
+//     --out <file.png> [--ref <image>]... [--aspect 4:3] [--size 1K|2K|4K] [--model <id>] --prompt "<text>"
 //
 // Reference images go first in the message, in the order given; the prompt says how to use them.
 // Prints one JSON line (model, size, seconds, output path) for docs/renders/LOG.md.
@@ -16,13 +16,13 @@ const { values } = parseArgs({
     out: { type: "string" },
     ref: { type: "string", multiple: true, default: [] },
     aspect: { type: "string" },
-    size: { type: "string", default: "2K" },
+    size: { type: "string" },
     model: { type: "string", default: "google/gemini-3.1-flash-image" },
   },
 });
 
 if (!values.prompt || !values.out) {
-  console.error("Usage: nano-banana.mts --out <file> [--ref <image>]... [--aspect 4:3] [--size 2K] --prompt <text>");
+  console.error("Usage: nano-banana.mts --out <file> [--ref <image>]... [--aspect 4:3] [--size 1K|2K|4K] --prompt <text>");
   process.exit(1);
 }
 
@@ -37,7 +37,10 @@ const result = await generateText({
   providerOptions: {
     google: {
       responseModalities: ["IMAGE"],
-      imageConfig: { imageSize: values.size, ...(values.aspect ? { aspectRatio: values.aspect } : {}) },
+      imageConfig: {
+        ...(values.size ? { imageSize: values.size } : {}),
+        ...(values.aspect ? { aspectRatio: values.aspect } : {}),
+      },
     },
   },
 });
@@ -53,7 +56,7 @@ await writeFile(values.out, image.uint8Array);
 console.log(
   JSON.stringify({
     model: values.model,
-    size: values.size,
+    size: values.size ?? null,
     aspect: values.aspect ?? null,
     refs: values.ref,
     mediaType: image.mediaType,
