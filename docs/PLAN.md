@@ -95,10 +95,10 @@ organized on: regions become districts of the city, and orbs sit at viewpoints.
 |---|---|---|
 | **World Labs Marble** | Full **World API** (`api.worldlabs.ai`, header `WLT-Api-Key`): generate worlds from text, images, panoramas or video; poll operations; export PLY splats or meshes; check credits. Spec: [openapi.yaml](https://docs.worldlabs.ai/api/reference/openapi.yaml). Key verified Oct 20; 7,000 API credits on the account. | **Primary.** Generates every walkable world from Eric's photos, scripted from the terminal and `wildlabs-mcp`. |
 | **Odyssey-2 Pro / Max** | Public developer API, real-time interactive video at ~720p, ~20 fps | **Opt-in live moment** inside a project ("imagine this live"). Costs per session, so capped. |
-| **NVIDIA Cosmos** | Open-weight world foundation models (server GPU) | **Offline content**: generated video for project scenes and transitions. |
+| **NVIDIA Cosmos** | Open-weight world foundation models (server GPU). Not on AI Gateway. | **Probably replaced** by Veo 3.1 or Kling through AI Gateway for transition clips; revisit only if those fall short. |
 | **Google Project Genie** | Research prototype, no developer API | **Watch list.** Use only for reference or capture until an API exists. |
 | **NVIDIA Omniverse** | Desktop and cloud-streaming platform | **Out of scope** for the web runtime. Possible authoring tool. |
-| **Nano Banana (Gemini image)** | Gemini API | Fills environment and texture gaps, makes stylized stills and images for 2D mode. |
+| **Nano Banana (Gemini image)** | Through **AI Gateway** (`google/gemini-3.1-flash-image` and siblings); no Gemini key | Fills environment and texture gaps, makes stylized stills and images for 2D mode. See `docs/briefs/rendering.md`. |
 | **Google Photorealistic 3D Tiles** | Map Tiles API | San Francisco aerial establishing shot. Attribution required, no caching or modifying tiles. |
 
 ### Performance budget
@@ -123,7 +123,7 @@ Dates assume a start on Mon Oct 20, 2026.
   - [x] World Labs (verified: read-only list call returns 200, wrong key returns 401)
   - [x] Vercel OIDC token (added by `vercel link`, lets local dev reach AI Gateway; expires after about 12 hours)
   - [x] AI Gateway auth: **decided Oct 20 to use the Vercel OIDC token** for local dev (no key). Create a capped `wildlabs-local` key only if `wildlabs-mcp` or long-running scripts need one.
-  - [ ] Gemini (Nano Banana), Google Map Tiles, Odyssey, NVIDIA, Mapbox
+  - [ ] Google Map Tiles, Odyssey (Mapbox optional). Gemini and NVIDIA keys are no longer needed: Nano Banana and video models run through AI Gateway.
 - [x] Dev setup PR: `pnpm typecheck` / `pnpm check`, GitHub Actions check on every PR, Claude Code settings, `.mcp.json` (Vercel MCP), unused starter icons removed
 - [ ] Spike each world model and record cost, speed and quality in `docs/spikes/`:
   - [ ] Marble world from the Yosemite panorama → SPZ → Spark in R3F
@@ -203,7 +203,7 @@ Hard caps are enforced in code (per-day counters) and in each provider's dashboa
 | AI Gateway (chat LLM) | Pay as you go, small model by default. **Budget set: $15 per month on the project.** | $15 |
 | Odyssey live sessions | Opt-in only, short sessions, daily cap | $15 |
 | Google Map Tiles | Within the free monthly usage where possible | $10 |
-| Nano Banana / Cosmos | Build-time generation only | $5–10 |
+| Nano Banana / video (via AI Gateway) | Build-time generation only, inside the AI Gateway budget and free tier | included above |
 | Asset CDN (Blob or R2) | Splat storage and delivery | $5 |
 
 After launch, World Labs can be paused, because worlds are exported once and served as static files.
@@ -260,7 +260,7 @@ After launch, World Labs can be paused, because worlds are exported once and ser
 
 ### Next up
 1. Merge the dev setup PR (#2).
-2. Add the remaining API keys (Gemini, Google Map Tiles, Odyssey, NVIDIA, Mapbox).
+2. Add the remaining API keys (Google Map Tiles, Odyssey; Mapbox optional).
 3. M1 review: Eric picks the home world and lenses → `docs/decisions/001-structure.md`.
 4. Eric sends the San Francisco, Venice Beach and Rio photos.
 
@@ -270,7 +270,7 @@ Run each track in its own Claude Code session, in its own git worktree and branc
 
 | Track | Branch | Worktree folder | Owns these paths |
 |---|---|---|---|
-| A. Yosemite world spike | `spike/marble-yosemite` | `~/build/wildlabs_portfolio-yosemite` | `scripts/spikes/`, `src/app/spikes/`, `src/components/spikes/`, `docs/spikes/marble-yosemite.md`, `public/worlds/` |
+| A. Yosemite world spike → **now the rendering session** (brief: `docs/briefs/rendering.md`) | `spike/marble-yosemite` | `~/build/wildlabs_portfolio-yosemite` | `scripts/render/`, `src/app/spikes/`, `src/components/spikes/`, `docs/renders/`, `public/renders/` |
 | B. wildlabs-mcp server | `feat/wildlabs-mcp` | `~/build/wildlabs_portfolio-mcp` | `mcp/`, `src/lib/worldlabs/`, `.mcp.json`, `docs/spikes/wildlabs-mcp.md` |
 | C. Phone camera + M1 review prep | `feat/m1-portrait-review` | `~/build/wildlabs_portfolio-m1` | `src/components/lab/`, `src/lab/`, `docs/decisions/001-structure.md` |
 
@@ -280,3 +280,18 @@ Run each track in its own Claude Code session, in its own git worktree and branc
 - **Don't edit `docs/PLAN.md`.** Put findings in your own `docs/` file and the PR description; the plan is updated after merges.
 - Ask before adding dependencies or spending credits beyond what the track's prompt allows.
 - Run `pnpm check` before opening the PR. Open it as a draft PR into `main`.
+
+## 11. Decisions
+
+| Date | Decision | Why |
+|---|---|---|
+| Oct 19 | Two-tier worlds: pre-generated World Labs splats as the base, live Odyssey moments as options | Genie has no API; Cosmos and Omniverse can't run in a browser |
+| Oct 19 | Powers of Ten information architecture with regions Buildings / Applications / Infra | Eric's sketch plus the Powers of Ten layout |
+| Oct 20 | `docs/PLAN.md` is the tracker; Linear later | One source of truth, versioned with the code |
+| Oct 20 | **All AI models through Vercel AI Gateway**; direct keys only for World Labs, Odyssey, Google Map Tiles | One credential, model switching, fallbacks, one budget and log, no markup |
+| Oct 20 | Local AI auth with the Vercel OIDC token (`vercel link`), no Gateway API key | Nothing to create or rotate; refresh about every 12 hours |
+| Oct 20 | Nano Banana via AI Gateway; no Gemini key. Video clips via Veo or Kling on the Gateway instead of Cosmos | Fewer accounts and keys; same budget |
+| Oct 20 | Stay on the AI Gateway free tier; $15 per month is a cap, not a fee | Buying credits ends the monthly free credit |
+| Oct 20 | Keep model IDs in one config file (`src/lib/ai/models.ts`, created in M2) | Low lock-in; one-line model swaps |
+| Oct 21 | Rendering work runs as its own session from `docs/briefs/rendering.md` (absorbs Track A) | Focused context for World Labs and Nano Banana |
+

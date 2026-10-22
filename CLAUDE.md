@@ -1,6 +1,6 @@
 # Wild Labs Portfolio
 
-AI-native 3D portfolio replacing ericluttmann.com and wildeylabs.com. The plan and milestones are in `docs/PLAN.md`.
+AI-native 3D portfolio replacing ericluttmann.com and wildeylabs.com. The plan, milestones and decisions are in `docs/PLAN.md`; focused briefs for specific work streams are in `docs/briefs/` (e.g. `docs/briefs/rendering.md`).
 
 @AGENTS.md
 
