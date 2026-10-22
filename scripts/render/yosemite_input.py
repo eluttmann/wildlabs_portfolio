@@ -12,7 +12,7 @@ Needs Pillow (system Python); not a project dependency.
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps
+from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageOps, ImageStat
 
 ASSETS = Path.home() / "build/wildlabs-assets/inputs/yosemite"
 TILES = ASSETS / "tiles"
@@ -86,13 +86,24 @@ def haze_mask(size: tuple[int, int]) -> Image.Image:
     return column.resize((w, h))
 
 
+def match_colour(clean: Image.Image, original: Image.Image, mask: Image.Image) -> Image.Image:
+    """Nano Banana drifts warmer and brighter; scale each channel so the untouched area matches the original."""
+    keep = ImageOps.invert(mask).point(lambda v: 255 if v > 250 else 0)
+    gains = [
+        ImageStat.Stat(o, keep).mean[0] / max(1.0, ImageStat.Stat(c, keep).mean[0])
+        for o, c in zip(original.split(), clean.split())
+    ]
+    return Image.merge("RGB", [band.point(lambda v, g=g: min(255, round(v * g))) for band, g in zip(clean.split(), gains)])
+
+
 def compose() -> None:
     out = Image.open(SOURCE).convert("RGB")
     for name, spec in TILE_BOXES.items():
         box = spec["box"]
         size = (box[2] - box[0], box[3] - box[1])
+        mask = feathered_mask(size, spec)
         clean = Image.open(TILES / f"{name}.clean.png").convert("RGB").resize(size, Image.LANCZOS)
-        out.paste(clean, box[:2], feathered_mask(size, spec))
+        out.paste(match_colour(clean, out.crop(box), mask), box[:2], mask)
 
     l, t, r, b = TRIM
     out = out.crop((l, t, out.width - r, out.height - b))

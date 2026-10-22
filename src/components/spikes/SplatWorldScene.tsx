@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ComponentRef, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { CameraControls } from "@react-three/drei";
 import { SparkRenderer, SplatFileType, SplatMesh } from "@sparkjsdev/spark";
-import { Vector3, type Group } from "three";
+import { Vector3 } from "three";
 import { projectBySlug } from "@/content/projects";
-import { color } from "@/design/tokens";
 import { Orb } from "@/components/lab/Orb";
 import type { SplatRes, SplatWorld } from "./worlds";
 
@@ -18,7 +17,7 @@ interface SceneProps {
   onStatus: (status: WorldStatus) => void;
 }
 
-const RESOLUTIONS: SplatRes[] = ["100k", "500k", "full_res"];
+const RESOLUTIONS: SplatRes[] = ["100k", "150k", "500k", "full_res"];
 
 /** Plan budget: about 500K splats on phones, full resolution on desktop. `?res=` overrides. */
 function pickRes(): SplatRes {
@@ -31,6 +30,12 @@ function splatUrl(world: SplatWorld, res: SplatRes) {
   return process.env.NODE_ENV === "development" ? `/spikes/splats/${world.id}/${res}.spz` : world.spz[res];
 }
 
+const nextFrames = (n: number) =>
+  new Promise<void>((resolve) => {
+    const tick = (left: number) => (left <= 0 ? resolve() : requestAnimationFrame(() => tick(left - 1)));
+    tick(n);
+  });
+
 /** Orbs sit at their centroid; the environment map is rendered from there. */
 function orbCentroid(world: SplatWorld) {
   const c = new Vector3();
@@ -42,8 +47,9 @@ function orbCentroid(world: SplatWorld) {
  * The Marble world as Gaussian splats. Marble SPZ files are OpenCV-framed (y down) in raw units:
  * rotate 180° about X, scale to metres, and lift by the ground offset so the meadow sits at y = 0.
  * Once loaded, the splats are rendered into an environment map so the glass orbs reflect the valley.
+ * The orbs mount only after that, so they never appear in their own reflections.
  */
-function Splats({ world, res, orbs, onStatus }: SceneProps & { orbs: RefObject<Group | null> }) {
+function Splats({ world, res, onStatus }: SceneProps) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
   const invalidate = useThree((s) => s.invalidate);
@@ -70,10 +76,14 @@ function Splats({ world, res, orbs, onStatus }: SceneProps & { orbs: RefObject<G
     onStatus("loading");
     mesh.initialized
       .then(async () => {
+        // Loaded is not yet drawn: give Spark a few frames to sort and upload before capturing the env map,
+        // or the glass refracts an empty (black) map.
+        await nextFrames(30);
+        if (cancelled) return;
         const envMap = await spark.renderEnvMap({
           scene,
           worldCenter: orbCentroid(world),
-          hideObjects: orbs.current ? [orbs.current] : [],
+          hideObjects: [],
           update: true,
         });
         if (cancelled) return;
@@ -86,7 +96,7 @@ function Splats({ world, res, orbs, onStatus }: SceneProps & { orbs: RefObject<G
       cancelled = true;
       mesh.dispose();
     };
-  }, [mesh, spark, scene, world, orbs, onStatus]);
+  }, [mesh, spark, scene, world, onStatus]);
 
   return (
     <>
@@ -129,8 +139,15 @@ function CameraRig({ world, selected }: { world: SplatWorld; selected: string | 
 }
 
 export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "res">) {
-  const orbs = useRef<Group>(null);
   const [res] = useState(pickRes);
+  const [ready, setReady] = useState(false);
+  const report = useCallback(
+    (status: WorldStatus) => {
+      setReady(status === "ready");
+      onStatus(status);
+    },
+    [onStatus],
+  );
   const [selected, setSelected] = useState<string | null>(null);
 
   return (
@@ -141,13 +158,13 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
       camera={{ position: world.camera.position, fov: 55, near: 0.05, far: 2000 }}
       onPointerMissed={() => setSelected(null)}
     >
-      <color attach="background" args={[color.gallery]} />
+      {/* No scene background until the world loads: the transparent canvas shows the gallery white behind it. */}
       <ambientLight intensity={0.4} />
 
-      <Splats world={world} res={res} orbs={orbs} onStatus={onStatus} />
+      <Splats world={world} res={res} onStatus={report} />
 
-      <group ref={orbs}>
-        {world.orbs.map((o, i) => {
+      {ready &&
+        world.orbs.map((o, i) => {
           const project = projectBySlug[o.slug];
           if (!project) return null;
           return (
@@ -164,7 +181,6 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
             />
           );
         })}
-      </group>
 
       <CameraRig world={world} selected={selected} />
     </Canvas>
