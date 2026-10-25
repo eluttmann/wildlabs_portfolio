@@ -11,6 +11,11 @@
   --region-buildings: #d63a2f;
   --region-applications: #f0be2a;
   --region-infra: #1f4e9e;
+  /* The 2D gallery (/gallery) is pure white like apple.com and ysl.com, carried over from the Framer site. */
+  --paper: #ffffff;
+  --ink-soft: #333333;
+  --ink-muted: #86868b;
+  --link: #0099ff;
   /* Helvetica Neue needs a web licence for non-Apple devices; until then this stack falls back. */
   --font-helvetica: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -25,6 +30,10 @@
   --color-region-buildings: var(--region-buildings);
   --color-region-applications: var(--region-applications);
   --color-region-infra: var(--region-infra);
+  --color-paper: var(--paper);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-muted: var(--ink-muted);
+  --color-link: var(--link);
   --font-sans: var(--font-helvetica);
 }
 
