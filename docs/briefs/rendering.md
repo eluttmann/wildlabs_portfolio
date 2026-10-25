@@ -104,4 +104,4 @@ until then, load them locally.
    with three glass orbs placed in the meadow (reuse `src/components/lab/Orb.tsx`).
 3. Two or three Nano Banana stills of Yosemite in the art direction above.
 4. `docs/renders/LOG.md` filled in, and a short verdict on quality, cost and next steps for the other worlds.
-5. `pnpm check` passes; draft PR into `main`.
+5. `pnpm check` passes; PR into `main`, ready for review (a draft only if something is unfinished or waits on Eric).

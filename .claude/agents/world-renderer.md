@@ -100,4 +100,5 @@ credits before and after every batch.
 - When a generation fails or underdelivers: say so, say why, and propose the cheapest next step.
 - Report in plain words; expand acronyms on first use. Big files go in `~/build/wildlabs-assets/`, never in git;
   web stills under 500 KB go in `public/renders/`.
-- Start each piece of work on a fresh branch off `main` in its own worktree, run `pnpm check`, and open a draft PR.
+- Start each piece of work on a fresh branch off `main` in its own worktree and run `pnpm check`. Open the PR ready
+  for review; use a draft only when work is unfinished or waits on Eric's decision, and say which in the description.
