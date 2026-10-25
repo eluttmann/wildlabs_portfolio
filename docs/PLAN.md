@@ -279,7 +279,7 @@ Run each track in its own Claude Code session, in its own git worktree and branc
 - Stay inside your owned paths. If you need to touch another track's paths, stop and say so in the PR.
 - **Don't edit `docs/PLAN.md`.** Put findings in your own `docs/` file and the PR description; the plan is updated after merges.
 - Ask before adding dependencies or spending credits beyond what the track's prompt allows.
-- Run `pnpm check` before opening the PR. Open it as a draft PR into `main`.
+- Run `pnpm check` before opening the PR into `main`. Open it ready for review; use a draft only when the work is unfinished or waits on a decision.
 
 ## 11. Decisions
 
@@ -294,4 +294,5 @@ Run each track in its own Claude Code session, in its own git worktree and branc
 | Oct 20 | Stay on the AI Gateway free tier; $15 per month is a cap, not a fee | Buying credits ends the monthly free credit |
 | Oct 20 | Keep model IDs in one config file (`src/lib/ai/models.ts`, created in M2) | Low lock-in; one-line model swaps |
 | Oct 21 | Rendering work runs as its own session from `docs/briefs/rendering.md` (absorbs Track A) | Focused context for World Labs and Nano Banana |
+| Oct 25 | PRs open ready for review once `pnpm check` passes; drafts only for unfinished work or open decisions | Drafts added a click to small, finished PRs; Eric reviews before merging either way |
 
