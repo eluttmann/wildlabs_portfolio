@@ -12,7 +12,7 @@ is in `LOG.md`; the brief is `docs/briefs/rendering.md`.
 |---|---|
 | Yosemite input (IMG_9486 cleaned) | Done: people, cars, RVs, barrier and the sun starburst removed; haze matched to IMG_3029 |
 | Yosemite world, draft 1 (`marble-1.1`) | Done but **not faithful**: Marble shrank the wide photo into the front view, duplicated El Capitan and left a floating sky artifact. Meadow, trees and haze are good. |
-| `/spikes/yosemite` | Works in dev and production: Spark, real-world scale, three glass orbs reflecting a splat-rendered environment map |
+| `/spikes/yosemite` | Works locally and on preview deployments: Spark, real-world scale, three glass orbs reflecting a splat-rendered environment map. All `/spikes/*` pages return 404 on production (`src/app/spikes/layout.tsx`). |
 | Yosemite stills | Done: `public/renders/yosemite-{hero,spires,meadow}.webp` |
 | San Francisco, Venice Beach, Rio | Not started; waiting on Eric's photos |
 
