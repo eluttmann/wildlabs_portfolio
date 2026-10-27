@@ -209,7 +209,7 @@ export const projects: Project[] = [
     slug: "ombi",
     title: "Ombi",
     org: "Founder",
-    role: "Product · Design · Go-to-market",
+    role: "Founder | Product, design, eng, GTM",
     summary: "Previews experiences through video.",
     url: "https://www.2d.ericluttmann.com/ombi/",
     caseStudy: ombi,
@@ -225,7 +225,7 @@ export const projects: Project[] = [
     exhibit: {
       title: "Ombi",
       description: "Preview experiences through video",
-      credits: "Founder | Product, Design, GTM …",
+      credits: "Founder | Product, design, eng, GTM",
       media: {
         kind: "video",
         src: "/exhibits/ombi.mp4",
