@@ -3,6 +3,12 @@
  * Facts come from ericluttmann.com. Anything marked `confirmed: false` is a placeholder to verify.
  */
 
+import type { CaseStudy } from "@/content/case-study";
+import { autoprospector } from "@/content/case-studies/autoprospector";
+import { dbcApp } from "@/content/case-studies/dbc-app";
+import { ombi } from "@/content/case-studies/ombi";
+import { vrDesignReviews } from "@/content/case-studies/vr-design-reviews";
+
 export type Region = "buildings" | "applications" | "infra";
 
 /** Powers of Ten ladder, smallest to largest. */
@@ -40,6 +46,8 @@ export interface Project {
   keywords: string[];
   /** How the project hangs in the 2D gallery (/gallery). */
   exhibit?: Exhibit;
+  /** Long-form project page; its gallery exhibit links there. */
+  caseStudy?: CaseStudy;
 }
 
 /** Media sizes are the desktop display size in CSS px; smaller screens scale them down. */
@@ -114,6 +122,7 @@ export const projects: Project[] = [
     role: "XR Engineer · 3D Design Management",
     summary: "Spatial prototyping on $300M buildings.",
     url: "https://www.2d.ericluttmann.com/vr/",
+    caseStudy: vrDesignReviews,
     region: "buildings",
     scale: "building",
     order: 1,
@@ -126,7 +135,6 @@ export const projects: Project[] = [
       title: "VR Design Reviews",
       description: "Spatial prototyping on $300M buildings",
       credits: "XR Engineer / 3D Design Mgmt",
-      href: "https://www.2d.ericluttmann.com/vr/",
       media: {
         kind: "image",
         src: "/exhibits/vr-design-reviews.webp",
@@ -144,6 +152,7 @@ export const projects: Project[] = [
     role: "Product Management & Design",
     summary: "Ordering buildings from 3D models.",
     url: "https://www.2d.ericluttmann.com/dbc/",
+    caseStudy: dbcApp,
     region: "buildings",
     scale: "building",
     order: 2,
@@ -156,7 +165,6 @@ export const projects: Project[] = [
       title: "DBC App",
       description: "Order buildings from 3D models",
       credits: "Product Mgmt & Design",
-      href: "https://www.2d.ericluttmann.com/dbc/",
       media: {
         kind: "image",
         src: "/exhibits/dbc-app.webp",
@@ -204,6 +212,7 @@ export const projects: Project[] = [
     role: "Product · Design · Go-to-market",
     summary: "Previews experiences through video.",
     url: "https://www.2d.ericluttmann.com/ombi/",
+    caseStudy: ombi,
     region: "applications",
     scale: "audience",
     order: 4,
@@ -217,7 +226,6 @@ export const projects: Project[] = [
       title: "Ombi",
       description: "Preview experiences through video",
       credits: "Founder | Product, Design, GTM …",
-      href: "https://www.2d.ericluttmann.com/ombi/",
       media: {
         kind: "video",
         src: "/exhibits/ombi.mp4",
@@ -235,6 +243,7 @@ export const projects: Project[] = [
     role: "Founding Product Designer",
     summary: "Knowledge work in minutes instead of days, with AI.",
     url: "https://www.2d.ericluttmann.com/autoprospector/",
+    caseStudy: autoprospector,
     region: "infra",
     scale: "minds",
     order: 5,
@@ -247,7 +256,6 @@ export const projects: Project[] = [
       title: "AutoProspector",
       description: "Do knowledge work in minutes rather than days with AI",
       credits: "Founding Product Designer",
-      href: "https://www.2d.ericluttmann.com/autoprospector/",
       media: {
         kind: "image",
         src: "/exhibits/autoprospector.webp",
@@ -360,3 +368,16 @@ export const GALLERY_ORDER = [
   "vr-design-reviews",
   "immersive-workspaces",
 ] as const;
+
+export type CaseStudyProject = Project & { caseStudy: CaseStudy };
+
+/** Projects that have a long-form page, in gallery order (drives prev and next links). */
+export const caseStudyProjects: CaseStudyProject[] = GALLERY_ORDER.map((slug) => projectBySlug[slug]).filter(
+  (p): p is CaseStudyProject => Boolean(p?.caseStudy),
+);
+
+export function caseStudyByPath(path: string): CaseStudyProject {
+  const project = caseStudyProjects.find((p) => p.caseStudy.path === path);
+  if (!project) throw new Error(`No case study at /${path}`);
+  return project;
+}
