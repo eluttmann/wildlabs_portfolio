@@ -327,7 +327,7 @@ export const projects: Project[] = [
     title: "Pillar",
     org: "Founder",
     role: "Founding Product Builder",
-    summary: "Spatial AI that helps LA homeowners get insurance after the fires.",
+    summary: "Spatial AI that helps homeowners get insurance in fire risk areas.",
     url: "https://buildwithpillar.com/",
     region: "applications",
     scale: "home",
@@ -340,7 +340,7 @@ export const projects: Project[] = [
     keywords: ["spatial", "ai", "home", "insurance", "wildfire", "founder", "geospatial", "property"],
     exhibit: {
       title: "Pillar",
-      description: "Spatial AI to help LA homeowners get insurance after the fires.",
+      description: "Spatial AI to help homeowners get insurance in fire risk areas",
       credits: "Founding Product Builder",
       href: "https://buildwithpillar.com/",
       media: {
