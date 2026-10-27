@@ -12,6 +12,11 @@ export const color = {
   ink2: "#5B5D60",
   ink3: "#9A9C9F",
   line: "#D3D4D2",
+  // 2D gallery (/gallery): pure white page, Framer-site text greys and link blue.
+  paper: "#FFFFFF",
+  inkSoft: "#333333",
+  inkMuted: "#86868B",
+  link: "#0099FF",
 } as const;
 
 export const regionColor: Record<Region, string> = {

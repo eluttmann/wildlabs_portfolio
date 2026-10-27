@@ -38,6 +38,27 @@ export interface Project {
   thesis: { spatialToAI: number; creationToKnowledge: number };
   location: ProjectLocation;
   keywords: string[];
+  /** How the project hangs in the 2D gallery (/gallery). */
+  exhibit?: Exhibit;
+}
+
+/** Media sizes are the desktop display size in CSS px; smaller screens scale them down. */
+export type ExhibitMedia =
+  | { kind: "image"; src: string; alt: string; width: number; height: number; radius?: number }
+  | { kind: "video"; src: string; poster: string; alt: string; width: number; height: number };
+
+/**
+ * A wall label and its object in the 2D gallery. Copy follows the Framer site (ericluttmann.com),
+ * so `title` can differ from the project's own (e.g. "LangChain" for LangGraph Studio).
+ */
+export interface Exhibit {
+  title: string;
+  description: string;
+  /** Turns the first occurrence of `text` inside the description into a link. */
+  descriptionLink?: { text: string; href: string };
+  credits: string;
+  href?: string;
+  media: ExhibitMedia;
 }
 
 export const REGIONS: Record<Region, { label: string }> = {
@@ -71,6 +92,20 @@ export const projects: Project[] = [
     thesis: { spatialToAI: -0.85, creationToKnowledge: -0.2 },
     location: { lat: 40.79, lon: -77.86, label: "State College, PA", confirmed: true },
     keywords: ["vr", "virtual-reality", "research", "workspace", "immersive", "spatial", "3d", "collaboration"],
+    exhibit: {
+      title: "Immersive Workspaces",
+      description: "$10M interactive workspace & video conference project - Dept of Energy",
+      credits: "VR Research Assistant",
+      href: "https://bim.psu.edu/interactive_workspaces/",
+      media: {
+        kind: "image",
+        src: "/exhibits/immersive-workspaces.webp",
+        alt: "An immersive workspace with wall-sized displays",
+        width: 534,
+        height: 406,
+        radius: 12,
+      },
+    },
   },
   {
     slug: "vr-design-reviews",
@@ -87,6 +122,20 @@ export const projects: Project[] = [
     thesis: { spatialToAI: -0.75, creationToKnowledge: -0.6 },
     location: { lat: 39.95, lon: -75.17, label: "Placeholder", confirmed: false },
     keywords: ["vr", "xr", "spatial", "prototyping", "building", "architecture", "construction", "3d"],
+    exhibit: {
+      title: "VR Design Reviews",
+      description: "Spatial prototyping on $300M buildings",
+      credits: "XR Engineer / 3D Design Mgmt",
+      href: "https://www.2d.ericluttmann.com/vr/",
+      media: {
+        kind: "image",
+        src: "/exhibits/vr-design-reviews.webp",
+        alt: "A design review in a VR headset in front of a building model",
+        width: 354,
+        height: 431,
+        radius: 24,
+      },
+    },
   },
   {
     slug: "dbc-app",
@@ -103,6 +152,19 @@ export const projects: Project[] = [
     thesis: { spatialToAI: -0.55, creationToKnowledge: -0.75 },
     location: { lat: 37.8, lon: -122.27, label: "Placeholder", confirmed: false },
     keywords: ["building", "3d", "model", "construction", "ordering", "product", "spatial", "architecture"],
+    exhibit: {
+      title: "DBC App",
+      description: "Order buildings from 3D models",
+      credits: "Product Mgmt & Design",
+      href: "https://www.2d.ericluttmann.com/dbc/",
+      media: {
+        kind: "image",
+        src: "/exhibits/dbc-app.webp",
+        alt: "The DBC App on a tablet, showing a 3D building model",
+        width: 534,
+        height: 406,
+      },
+    },
   },
   {
     slug: "millennial-entertainment",
@@ -119,6 +181,21 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.2, creationToKnowledge: -0.9 },
     location: { lat: 34.02, lon: -118.45, label: "Placeholder", confirmed: false },
     keywords: ["brand", "visual", "identity", "website", "video", "media", "audience", "entertainment"],
+    exhibit: {
+      title: "Millennial Entertainment",
+      // Framer reads "100 Million+"; reworded because figures never carry a "+" in UI copy.
+      description: "More than 100 million combined monthly viewers",
+      credits: "Visual & Brand Design | website & video",
+      href: "https://www.millentertainment.com/",
+      media: {
+        kind: "video",
+        src: "/exhibits/millennial.mp4",
+        poster: "/exhibits/millennial-poster.webp",
+        alt: "Millennial Entertainment sizzle reel on a phone",
+        width: 291,
+        height: 632,
+      },
+    },
   },
   {
     slug: "ombi",
@@ -136,6 +213,20 @@ export const projects: Project[] = [
     thesis: { spatialToAI: -0.1, creationToKnowledge: -0.45 },
     location: { lat: 37.76, lon: -122.42, label: "Placeholder", confirmed: false },
     keywords: ["video", "preview", "experience", "founder", "startup", "media", "go-to-market"],
+    exhibit: {
+      title: "Ombi",
+      description: "Preview experiences through video",
+      credits: "Founder | Product, Design, GTM …",
+      href: "https://www.2d.ericluttmann.com/ombi/",
+      media: {
+        kind: "video",
+        src: "/exhibits/ombi.mp4",
+        poster: "/exhibits/ombi-poster.webp",
+        alt: "The Ombi app on a phone, previewing places through video",
+        width: 362,
+        height: 704,
+      },
+    },
   },
   {
     slug: "autoprospector",
@@ -152,6 +243,19 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.8, creationToKnowledge: 0.7 },
     location: { lat: 37.79, lon: -122.4, label: "Placeholder", confirmed: false },
     keywords: ["ai", "knowledge", "research", "agent", "automation", "founding", "startup", "tool"],
+    exhibit: {
+      title: "AutoProspector",
+      description: "Do knowledge work in minutes rather than days with AI",
+      credits: "Founding Product Designer",
+      href: "https://www.2d.ericluttmann.com/autoprospector/",
+      media: {
+        kind: "image",
+        src: "/exhibits/autoprospector.webp",
+        alt: "AutoProspector on a laptop",
+        width: 640,
+        height: 444,
+      },
+    },
   },
   {
     slug: "langgraph-studio",
@@ -168,6 +272,20 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.9, creationToKnowledge: 0.1 },
     location: { lat: 37.78, lon: -122.39, label: "San Francisco", confirmed: true },
     keywords: ["ai", "agent", "developer", "tool", "visual", "graph", "langchain", "enterprise"],
+    exhibit: {
+      title: "LangChain",
+      description: "LangGraph Studio is a visual agent development tool used by Apple, Visa, Uber, Replit, LinkedIn.",
+      descriptionLink: { text: "LangGraph Studio", href: "https://www.youtube.com/watch?v=Mi1gSlHwZLM&t=1s" },
+      credits: "Product Design",
+      href: "https://www.youtube.com/watch?v=Mi1gSlHwZLM&t=1s",
+      media: {
+        kind: "image",
+        src: "/exhibits/langchain.webp",
+        alt: "LangGraph Studio on a laptop",
+        width: 640,
+        height: 444,
+      },
+    },
   },
   {
     slug: "marble",
@@ -183,6 +301,18 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.1, creationToKnowledge: 0.9 },
     location: { lat: 38.9, lon: -77.04, label: "Placeholder", confirmed: false },
     keywords: ["geospatial", "ai", "map", "earth", "satellite", "spatial", "data", "planet"],
+    exhibit: {
+      title: "Marble",
+      description: "Geospatial AI web-app that lets institutions access decades of spatial data to improve place performance.",
+      credits: "Product Design & Mgmt",
+      media: {
+        kind: "image",
+        src: "/exhibits/marble.webp",
+        alt: "Marble on a laptop, showing an aerial map",
+        width: 640,
+        height: 444,
+      },
+    },
   },
   {
     slug: "pillar",
@@ -200,7 +330,33 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.0, creationToKnowledge: 0.45 },
     location: { lat: 34.05, lon: -118.53, label: "Los Angeles", confirmed: true },
     keywords: ["spatial", "ai", "home", "insurance", "wildfire", "founder", "geospatial", "property"],
+    exhibit: {
+      title: "Pillar",
+      description: "Spatial AI to help LA homeowners get insurance after the fires.",
+      credits: "Product Builder (Design, Eng, Mgmt)",
+      href: "https://buildwithpillar.com/",
+      media: {
+        kind: "image",
+        src: "/exhibits/pillar.webp",
+        alt: "Pillar on a laptop, showing a home and its wildfire walkthrough",
+        width: 640,
+        height: 444,
+      },
+    },
   },
 ];
 
 export const projectBySlug = Object.fromEntries(projects.map((p) => [p.slug, p])) as Record<string, Project>;
+
+/** Hanging order of the 2D gallery, as on the Framer site: newest work first. */
+export const GALLERY_ORDER = [
+  "pillar",
+  "langgraph-studio",
+  "marble",
+  "ombi",
+  "autoprospector",
+  "dbc-app",
+  "millennial-entertainment",
+  "vr-design-reviews",
+  "immersive-workspaces",
+] as const;
