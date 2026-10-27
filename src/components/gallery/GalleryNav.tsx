@@ -1,19 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 /** The bio still lives on the Framer site until it moves into this repo. */
 const ABOUT_URL = "https://www.ericluttmann.com/about";
 
 /**
- * 2D top bar: the Wildey painting returns to the 3D world, ABOUT opens the bio. `compact` is the slim
- * bar for reading pages, so the story starts on the first screen.
+ * 2D top bar: the Wildey painting goes home, ABOUT opens the bio, and `children` sits centred between
+ * them (the view toggle on the home page). `compact` is the slim bar for reading pages, so the story
+ * starts on the first screen.
  */
-export function GalleryNav({ compact = false }: { compact?: boolean }) {
+export function GalleryNav({ compact = false, children }: { compact?: boolean; children?: ReactNode }) {
   return (
     <header
-      className={`flex items-center justify-between px-6 ${compact ? "py-4" : "h-[15svh] tablet:h-[12svh]"}`}
+      className={`grid grid-cols-[1fr_auto_1fr] items-center px-6 ${compact ? "py-4" : "h-[15svh] tablet:h-[12svh]"}`}
     >
-      <Link href="/" aria-label="Wild Labs, back to the 3D world">
+      <Link href="/" aria-label="Wild Labs, home" className="justify-self-start">
         <Image
           src="/exhibits/wildey.webp"
           alt=""
@@ -26,9 +28,10 @@ export function GalleryNav({ compact = false }: { compact?: boolean }) {
           }`}
         />
       </Link>
+      <div>{children}</div>
       <a
         href={ABOUT_URL}
-        className={`font-bold hover:underline ${compact ? "text-caption tracking-[0.02em]" : "text-[20px] leading-[1.6]"}`}
+        className={`justify-self-end font-bold hover:underline ${compact ? "text-caption tracking-[0.02em]" : "text-[20px] leading-[1.6]"}`}
       >
         ABOUT
       </a>

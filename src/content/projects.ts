@@ -44,7 +44,7 @@ export interface Project {
   thesis: { spatialToAI: number; creationToKnowledge: number };
   location: ProjectLocation;
   keywords: string[];
-  /** How the project hangs in the 2D gallery (/gallery). */
+  /** How the project hangs in the 2D gallery (the home page). */
   exhibit?: Exhibit;
   /** Long-form project page; its gallery exhibit links there. */
   caseStudy?: CaseStudy;

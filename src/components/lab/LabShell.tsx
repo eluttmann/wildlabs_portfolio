@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { AskBar } from "@/components/shell/AskBar";
+import { ViewToggle } from "@/components/shell/ViewToggle";
 import { projects, projectBySlug, REGIONS } from "@/content/projects";
 import { LAYOUTS, layoutById, type LayoutId } from "@/lab/layouts";
 import { matchProjects } from "@/lab/match";
@@ -16,7 +18,6 @@ const Scene = dynamic(() => import("./Scene"), {
 export function LabShell() {
   const [layoutId, setLayoutId] = useState<LayoutId>("powers");
   const [selected, setSelected] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<Set<string> | null>(null);
 
   const def = layoutById[layoutId];
@@ -44,11 +45,9 @@ export function LabShell() {
     return () => window.removeEventListener("keydown", onKey);
   }, [choose]);
 
-  const ask = (e: FormEvent) => {
-    e.preventDefault();
-    const q = query.trim();
+  const ask = (query: string) => {
     setSelected(null);
-    setMatches(q ? matchProjects(projects, q) : null);
+    setMatches(query ? matchProjects(projects, query) : null);
   };
 
   return (
@@ -57,13 +56,18 @@ export function LabShell() {
 
       {/* Brand */}
       <header className="pointer-events-none absolute left-[max(16px,env(safe-area-inset-left))] top-[calc(20px+env(safe-area-inset-top))] grid gap-1.5 pl-2">
-        <span className="text-[10px] uppercase tracking-[0.18em] text-ink-3">“Structure Lab” · M1</span>
         <h1 className="text-[22px] font-bold uppercase leading-none tracking-[-0.01em]">Wild Labs</h1>
         <p className="max-w-[30ch] text-[13px] leading-snug text-ink-2">Spatial understanding and creation.</p>
       </header>
 
+      {/* View toggle: top right on phones, centred from md up (where the legend takes the right). */}
+      <ViewToggle
+        current="3d"
+        className="absolute right-[max(16px,env(safe-area-inset-right))] top-[calc(16px+env(safe-area-inset-top))] md:right-auto md:left-1/2 md:-translate-x-1/2"
+      />
+
       {/* Region legend */}
-      <ul className="pointer-events-none absolute right-[max(16px,env(safe-area-inset-right))] top-[calc(22px+env(safe-area-inset-top))] hidden gap-4 pr-2 text-[10px] uppercase tracking-[0.16em] text-ink-2 sm:flex">
+      <ul className="pointer-events-none absolute right-[max(16px,env(safe-area-inset-right))] top-[calc(22px+env(safe-area-inset-top))] hidden gap-4 pr-2 text-[10px] uppercase tracking-[0.16em] text-ink-2 md:flex">
         {Object.entries(REGIONS).map(([key, r]) => (
           <li key={key} className="flex items-center gap-2">
             <span className="size-2 rounded-full" style={{ background: regionColor[key as keyof typeof regionColor] }} />
@@ -101,32 +105,12 @@ export function LabShell() {
       </nav>
 
       {/* Ask bar */}
-      <div className="absolute bottom-[calc(20px+env(safe-area-inset-bottom))] left-1/2 grid w-[min(560px,calc(100%-32px))] -translate-x-1/2 gap-2">
-        {matches && (
-          <div className="flex items-center justify-center gap-3 text-[12px] text-ink-2">
-            <span>
-              {matches.size ? `${matches.size} ${matches.size === 1 ? "project" : "projects"} match` : "Nothing matched. Try spatial, agents, brand or video."}
-            </span>
-            <button type="button" className="rounded-full bg-ink/5 px-3 py-1 text-ink" onClick={() => { setMatches(null); setQuery(""); }}>
-              Show all
-            </button>
-          </div>
-        )}
-        <form onSubmit={ask} className="flex items-center gap-2 rounded-full border border-line bg-white/70 py-1.5 pl-5 pr-1.5 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.35)] backdrop-blur-xl focus-within:border-ink/30">
-          <label htmlFor="ask" className="sr-only">Ask me anything</label>
-          <input
-            id="ask"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask me anything"
-            className="min-w-0 flex-1 bg-transparent py-2 text-[14px] outline-none placeholder:text-ink-3"
-            autoComplete="off"
-          />
-          <button type="submit" aria-label="Ask" className="grid size-9 flex-none place-items-center rounded-full bg-ink text-gallery">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
-          </button>
-        </form>
-      </div>
+      <AskBar
+        count={matches ? matches.size : null}
+        onAsk={ask}
+        onClear={() => setMatches(null)}
+        className="absolute bottom-[calc(20px+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2"
+      />
 
       {/* Project panel */}
       <aside
