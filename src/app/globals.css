@@ -37,6 +37,37 @@
   --font-sans: var(--font-helvetica);
 }
 
+/*
+ * 2D type scale, widths and breakpoints (gallery and project pages). DOM-only, so not mirrored in
+ * tokens.ts. Reference: docs/design-system.md. `-sm` steps are the sizes below the `wide` breakpoint.
+ */
+@theme {
+  --text-display: 48px;
+  --text-display--line-height: 52px;
+  --text-display-sm: 36px;
+  --text-display-sm--line-height: 40px;
+  --text-heading: 28px;
+  --text-heading--line-height: 34px;
+  --text-lede: 24px;
+  --text-lede--line-height: 30px;
+  --text-lede-sm: 20px;
+  --text-lede-sm--line-height: 26px;
+  --text-body: 19px;
+  --text-body--line-height: 30px;
+  --text-body-sm: 17px;
+  --text-body-sm--line-height: 27px;
+  --text-caption: 16px;
+  --text-caption--line-height: 20px;
+  --text-caption-sm: 14px;
+  --text-caption-sm--line-height: 18px;
+
+  --container-measure: 680px;
+  --container-media: 1080px;
+
+  --breakpoint-tablet: 50.625rem; /* 810px */
+  --breakpoint-wide: 75rem; /* 1200px */
+}
+
 /* The gallery is a single light world by design; no dark palette yet. */
 html {
   color-scheme: light;

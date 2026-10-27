@@ -1,46 +1,72 @@
-import Image from "next/image";
-import type { Exhibit, ExhibitMedia } from "@/content/projects";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { Media } from "@/components/gallery/Media";
+import type { Exhibit } from "@/content/projects";
 
 const external = { target: "_blank", rel: "noopener noreferrer" } as const;
 
 /**
- * One project per screen: wall label on the left and the object on the right from 1200px up,
+ * One project per screen: wall label on the left and the object on the right from `wide` up,
  * stacked object-first below that (the Framer tablet and phone layouts).
  */
 export function GalleryExhibit({ exhibit }: { exhibit: Exhibit }) {
   const { title, href, credits, media } = exhibit;
   return (
-    <article className="mx-auto flex min-h-svh w-[87vw] max-w-[640px] flex-col items-center justify-center gap-8 py-16 min-[1200px]:w-[64vw] min-[1200px]:max-w-[1080px] min-[1200px]:flex-row min-[1200px]:gap-0 min-[1200px]:py-[100px]">
-      <div className="order-2 w-[75%] min-[1200px]:order-1 min-[1200px]:flex min-[1200px]:w-1/2 min-[1200px]:justify-center">
-        <div className="flex flex-col items-start gap-[5px] min-[1200px]:w-[72%] min-[1200px]:gap-[11px]">
-          <h2 className="text-[36px] leading-[40px] font-bold text-balance text-ink-soft min-[1200px]:text-[48px] min-[1200px]:leading-[52px]">
+    <article className="mx-auto flex min-h-svh w-[87vw] max-w-[640px] flex-col items-center justify-center gap-8 py-16 wide:w-[64vw] wide:max-w-media wide:flex-row wide:gap-0 wide:py-[100px]">
+      <div className="order-2 w-[75%] wide:order-1 wide:flex wide:w-1/2 wide:justify-center">
+        <div className="flex flex-col items-start gap-[5px] wide:w-[72%] wide:gap-[11px]">
+          <h2 className="text-display-sm font-bold text-balance text-ink-soft wide:text-display">
             {href ? (
-              <a href={href} {...external} className="text-ink hover:text-ink-2 hover:underline">
+              <ExhibitLink href={href} className="text-ink hover:text-ink-2 hover:underline">
                 {title}
-              </a>
+              </ExhibitLink>
             ) : (
               title
             )}
           </h2>
-          <p className="text-[20px] leading-6 text-ink-soft min-[1200px]:text-[24px] min-[1200px]:leading-7">
+          <p className="text-lede-sm text-ink-soft wide:text-lede">
             <Description exhibit={exhibit} />
           </p>
-          <p className="text-[14px] leading-[18px] text-ink-muted min-[1200px]:text-[16px] min-[1200px]:leading-5">
-            {credits}
-          </p>
+          <p className="text-caption-sm text-ink-muted wide:text-caption">{credits}</p>
         </div>
       </div>
-      <div className="order-1 flex w-full justify-center min-[1200px]:order-2 min-[1200px]:w-1/2">
+      <div className="order-1 flex w-full justify-center wide:order-2 wide:w-1/2">
         {href ? (
           // The title already carries this link for keyboards and screen readers.
-          <a href={href} {...external} tabIndex={-1} aria-hidden className="contents">
-            <Media media={media} />
-          </a>
+          <ExhibitLink href={href} tabIndex={-1} aria-hidden className="contents">
+            <Media media={media} capped sizes={`(min-width: 1200px) ${media.width}px, 87vw`} />
+          </ExhibitLink>
         ) : (
-          <Media media={media} />
+          <Media media={media} capped sizes={`(min-width: 1200px) ${media.width}px, 87vw`} />
         )}
       </div>
     </article>
+  );
+}
+
+/** Project pages open in place; outside sites open in a new tab. */
+function ExhibitLink({
+  href,
+  children,
+  ...rest
+}: {
+  href: string;
+  children: ReactNode;
+  className?: string;
+  tabIndex?: number;
+  "aria-hidden"?: boolean;
+}) {
+  if (href.startsWith("/")) {
+    return (
+      <Link href={href} {...rest}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <a href={href} {...external} {...rest}>
+      {children}
+    </a>
   );
 }
 
@@ -56,39 +82,5 @@ function Description({ exhibit: { description, descriptionLink } }: { exhibit: E
       </a>
       {description.slice(end)}
     </>
-  );
-}
-
-function Media({ media }: { media: ExhibitMedia }) {
-  const frame = {
-    aspectRatio: `${media.width} / ${media.height}`,
-    maxWidth: media.width,
-    borderRadius: media.kind === "image" ? media.radius : undefined,
-  };
-  return (
-    <div className="relative w-full overflow-hidden" style={frame}>
-      {media.kind === "image" ? (
-        <Image
-          src={media.src}
-          alt={media.alt}
-          fill
-          sizes={`(min-width: 1200px) ${media.width}px, 87vw`}
-          className="object-cover"
-        />
-      ) : (
-        <video
-          className="size-full object-cover"
-          poster={media.poster}
-          aria-label={media.alt}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        >
-          <source src={media.src} type="video/mp4" />
-        </video>
-      )}
-    </div>
   );
 }
