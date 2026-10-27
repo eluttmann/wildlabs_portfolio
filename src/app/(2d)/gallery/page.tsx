@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GalleryExhibit } from "@/components/gallery/GalleryExhibit";
 import { GalleryHero } from "@/components/gallery/GalleryHero";
+import { GalleryNav } from "@/components/gallery/GalleryNav";
 import { GALLERY_ORDER, projectBySlug } from "@/content/projects";
 
 export const metadata: Metadata = {
@@ -19,8 +20,10 @@ export default function GalleryPage() {
   });
 
   return (
-    <main>
-      <GalleryHero />
+    <>
+      <GalleryNav />
+      <main>
+        <GalleryHero />
       <section className="flex min-h-svh items-center justify-center pt-[59px] tablet:min-h-[600px] tablet:px-10 tablet:pt-[216px]">
         <h2 className="w-[80%] space-y-[1.1em] text-[28px] leading-[1.1] font-medium tablet:w-[73%] tablet:text-[48px]">
           <span className="block">Eric creates 3D & AI software products that enable access to knowledge & creation.</span>
@@ -28,9 +31,10 @@ export default function GalleryPage() {
           <span className="block">His products have been presented at an Autodesk Keynote and Stanford University.</span>
         </h2>
       </section>
-      {exhibits.map(({ slug, exhibit }) => (
-        <GalleryExhibit key={slug} exhibit={exhibit} />
-      ))}
-    </main>
+        {exhibits.map(({ slug, exhibit }) => (
+          <GalleryExhibit key={slug} exhibit={exhibit} />
+        ))}
+      </main>
+    </>
   );
 }

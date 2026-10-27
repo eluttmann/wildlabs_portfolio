@@ -42,8 +42,6 @@
  * tokens.ts. Reference: docs/design-system.md. `-sm` steps are the sizes below the `wide` breakpoint.
  */
 @theme {
-  --text-hero: 72px;
-  --text-hero--line-height: 76px;
   --text-display: 48px;
   --text-display--line-height: 52px;
   --text-display-sm: 36px;

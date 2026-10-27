@@ -9,7 +9,10 @@ widths and breakpoints are DOM-only.
 
 ## Principles
 
-1. **One idea per screen.** Each exhibit fills the viewport; each page section has room to breathe.
+1. **Exhibits fill the screen; reading pages start reading.** Each gallery exhibit fills the viewport. On a
+   project page the story begins on the first screen: slim nav, left-aligned title block, and the
+   header takes no more than about a third of the viewport (first paragraph around 300px down on a
+   900px-tall screen, as on the old 2D site). Never give a reading page a full-height hero.
 2. **Type and space make the hierarchy.** No cards, shadows, borders or badges. A hairline (`border-line`)
    only marks a new chapter or the end of a page.
 3. **The object is the hero.** Media is larger than the text next to it and breaks out of the reading column.
@@ -36,8 +39,7 @@ Helvetica Neue stack only. Each role has a size below `wide` (`-sm`) and one fro
 
 | Token | Size / line | Weight | Role |
 |---|---|---|---|
-| `text-hero` | 72 / 76 | Bold | Project page title (`wide`) |
-| `text-display` | 48 / 52 | Bold | Exhibit titles, chapter titles, project title (`tablet`) |
+| `text-display` | 48 / 52 | Bold | Exhibit titles, chapter titles, project page titles (`tablet` up) |
 | `text-display-sm` | 36 / 40 | Bold | The same below `wide` |
 | `text-heading` | 28 / 34 | Bold | Section headings on project pages |
 | `text-lede` / `-sm` | 24 / 30, 20 / 26 | Regular, medium for quotes | Taglines, exhibit descriptions, pull quotes |
@@ -63,11 +65,11 @@ spaced `gap-16` (64px), `gap-24` (96px) from `wide` up.
 
 | Component | File | Role |
 |---|---|---|
-| `GalleryNav` | `src/components/gallery/GalleryNav.tsx` | Logo to the 3D world, ABOUT. Shared by the `(2d)` layout |
+| `GalleryNav` | `src/components/gallery/GalleryNav.tsx` | Logo to the 3D world, ABOUT. Full height on `/gallery`; `compact` (slim bar) on project pages |
 | `GalleryHero` | `src/components/gallery/GalleryHero.tsx` | Gallery first screen |
 | `GalleryExhibit` | `src/components/gallery/GalleryExhibit.tsx` | One project per screen; links to its page or outside site |
 | `Media` | `src/components/gallery/Media.tsx` | Image or silent looping video at the media's aspect ratio |
-| `CaseStudyPage` | `src/components/case-study/CaseStudyPage.tsx` | Title, blocks, next project |
+| `CaseStudyPage` | `src/components/case-study/CaseStudyPage.tsx` | Compact nav, left-aligned title block, blocks, next project |
 | `CaseStudyBlockView` | `src/components/case-study/CaseStudyBlocks.tsx` | Renders text, list, points, quotes, figure(s), chapter |
 
 ## Adding a project page
