@@ -100,3 +100,68 @@ soften the sun, add haze, remove the cars.
    space. Expected cost about 1,600 credits per world, plus about $0.35 of Nano Banana cleanup.
 3. **Floaters:** worth testing Spark splat editing (`SplatEdit`) to cull splats within about 1.5 m of the camera.
 4. **Gateway billing:** paid credit is now on the team; update the Oct 20 free-tier decision in `PLAN.md` after merge.
+
+## Yosemite bike ride, stop 1: El Capitan Meadow drafts (session 2, Oct 28 2026)
+
+Eric's brief: two `marble-1.0-draft` worlds through the Marble API only, one from text and one from text plus
+`public/renders/yosemite-hero.webp`; show both in `/spikes/yosemite`; estimate how far each extends before it
+degrades; stop before `marble-1.1`.
+
+Prompt (both): "A paved bike path on the floor of Yosemite Valley, California, running straight ahead and behind
+through an open green meadow. The sheer granite face of El Capitan rises thousands of feet on the left; Cathedral
+Rocks and the distant shape of Half Dome sit to the right and ahead. Tall ponderosa pines and incense cedars line
+the meadow edges, with a few black oaks near the path. The Merced River runs calm and clear beside the path on the
+right. Late afternoon, soft natural light, light atmospheric haze across the valley, muted and slightly desaturated
+colors. Flat, smooth path surface, grass and wildflowers on both sides." Marble recaptioned it (default); the
+expanded caption is in each `world.json`.
+
+### Generations
+
+| Date | Tool · model | Input | Cost | Time | Output | Verdict |
+|---|---|---|---|---|---|---|
+| Oct 28 | World API · `marble-1.0-draft`, text | Prompt only | 230 credits (80 pano from text, 150 draft world) | 0.7 min | `worlds/yosemite-meadow-text/` · world `4ab4e3c4-cbc2-4103-aeb6-499191741ed6` | **Better of the two.** Straight path, El Capitan left, hazy notch ahead, muted colour. A **cyclist on the path** about 10 m ahead (no-people rule broken), a rainbow fringe on El Capitan's left edge, flat grey-brown overcast instead of late-afternoon light, tree canopy smeared across the top of the sky. |
+| Oct 28 | World API · `marble-1.0-draft`, image (`is_pano: false`) and text | `yosemite-hero.webp` (2400×1019, 21:9) | 230 credits (80 pano from image, 150 draft world) | 0.7 min | `worlds/yosemite-meadow-image/` · world `974287d3-dc36-4d82-aea4-d7d56d37f7f4` | **Not faithful.** The wide still was squeezed into the front view again (as in draft 1): **El Capitan appears three times** (large left, large right, the hero's small one ahead), a hard sun with a halo sits dead ahead, the path runs off to the viewer's left instead of ahead, and the ground under the camera has a radial smear. Rock and dry grass are more convincing than the text draft. |
+
+**Balance:** 5,420 credits before, 4,960 after (460 spent). No Nano Banana.
+
+### How far each world holds up
+
+Two measures, from the viewer at the origin walking down the path (forward is −z):
+
+1. **Splat density** (`node scripts/render/splat-reach.mts <world>`): ground splats per square metre and their
+   median size, in rings. "Degrades" = under 10% of the 2–5 m density or a median ground splat over 0.3 m.
+2. **Review sheet** (`node scripts/render/review-sheet.mts --world <world>` against `pnpm dev`): four directions at
+   the viewer, then forward at 10, 20 and 40 m. Headless Chrome on the Mac GPU renders full resolution in about
+   5 s per view.
+
+| World | Density says | Screenshots say | Splats end at | Estimate |
+|---|---|---|---|---|
+| Draft · text | Degrades from 10 m | Sharp to about 5 m; streaking ground and a smeared cyclist at 10 m; smeared at 20 m; sky shell tears at 40 m | 99% within 71 m | **About 8–10 m** |
+| Draft · text and still | Degrades from 15 m | Ground streaks radially by 10 m (the splats stay dense but stretch, so density flatters it); grey smear at 40 m | 99% within 56 m | **About 5 m** |
+| Draft 1 (`marble-1.1`, photo) | Degrades from 10 m | Floating foliage over the viewer; ground streaks by 10 m | 99% within 85 m | About 10 m |
+
+![Walk-out: text draft on top, text and still below; 0, 10 and 20 m forward](yosemite-meadow-drafts-walk.webp)
+
+![Review sheet: rows are text, text and still, draft 1; columns are north, west, south, east at the viewer, then 10, 20 and 40 m forward](yosemite-meadow-drafts-sheet.webp)
+
+Caveats:
+
+- **Scale is assumed.** `marble-1.0-draft` returns no `semantics_metadata` (no metric scale, no ground offset), so
+  raw units are treated as metres and the ground is estimated from the splats (the estimator gets draft 1's ground
+  within 4% of its metadata: 0.410 against 0.426). If the real scale differs, the distances above scale with it.
+- **The camera sits about 0.6 m above the ground** in raw units in all three worlds while the spike stands the viewer
+  at 1.6 m. Either Marble's capture camera is low or raw units are smaller than metres (a factor of about 2.8 would
+  put it at eye height). Worth settling before orbs are placed for real.
+- **El Capitan is a backdrop**, painted on a shell 50–70 m out, not a cliff about a kilometre away. No world here
+  can be walked toward a landmark; the bike ride has to be a chain of stops, each one about 10 m across.
+
+### Next steps (need Eric)
+
+1. **Pick a direction before any `marble-1.1` spend (1,580 credits).** Recommended: text only, with the prompt
+   tightened to "no people, no cyclists", "late afternoon sun low in the west, warm side light" and "one path".
+   Cheapest proof first: a second text draft (230 credits), then `marble-1.1` from the approved panorama.
+2. **Don't send the hero still as a single image again.** It's a 21:9 strip; Marble squeezes it into the front view
+   and invents El Capitan again on both sides. If a photo should anchor the world, use it as one direction in a
+   multi-image prompt or composite it into a 2:1 panorama first (STATUS open item 1).
+3. **Reach is about 10 m at best** at draft quality. A full `marble-1.1` world is denser but has a similar reach
+   (draft 1); a longer ride needs several stops or Marble Compose.

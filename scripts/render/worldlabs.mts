@@ -1,8 +1,9 @@
 // World Labs World API (Marble) from the terminal. Auth: WORLD_LABS_API_KEY from .env.local.
 //
 //   node --env-file=.env.local scripts/render/worldlabs.mts credits
-//   node --env-file=.env.local scripts/render/worldlabs.mts generate --world yosemite --image <file> \
+//   node --env-file=.env.local scripts/render/worldlabs.mts generate --world yosemite [--image <file>] \
 //     [--model marble-1.1] [--prompt "<text>"] [--pano] [--confirm]
+//   (no --image: a text-only world from --prompt)
 //   node --env-file=.env.local scripts/render/worldlabs.mts fetch --world yosemite --id <world_id>
 //   node --env-file=.env.local scripts/render/worldlabs.mts list
 //
@@ -119,26 +120,29 @@ if (command === "credits") {
   if (!values.world || !values.id) throw new Error("fetch needs --world and --id");
   await download(values.world, await api<World>("GET", `/worlds/${values.id}`));
 } else if (command === "generate") {
-  if (!values.world || !values.image) throw new Error("generate needs --world and --image");
-  const request = (mediaAssetId: string) => ({
+  if (!values.world || !(values.image || values.prompt)) throw new Error("generate needs --world and --image or --prompt");
+  const request = (mediaAssetId?: string) => ({
     display_name: values.world,
     model: values.model,
     permission: { public: false },
-    world_prompt: {
-      type: "image",
-      image_prompt: { source: "media_asset", media_asset_id: mediaAssetId },
-      is_pano: values.pano,
-      ...(values.prompt ? { text_prompt: values.prompt } : {}),
-    },
+    world_prompt: mediaAssetId
+      ? {
+          type: "image",
+          image_prompt: { source: "media_asset", media_asset_id: mediaAssetId },
+          is_pano: values.pano,
+          ...(values.prompt ? { text_prompt: values.prompt } : {}),
+        }
+      : { type: "text", text_prompt: values.prompt },
   });
   const before = await credits();
   console.log(`Credits before: ${before}`);
   if (!values.confirm) {
-    console.log("Dry run (no upload, no spend). Request:", JSON.stringify(request("<media_asset_id>"), null, 2));
+    const preview = request(values.image ? "<media_asset_id>" : undefined);
+    console.log("Dry run (no upload, no spend). Request:", JSON.stringify(preview, null, 2));
     process.exit(0);
   }
   const started = Date.now();
-  const mediaAssetId = await upload(values.image);
+  const mediaAssetId = values.image ? await upload(values.image) : undefined;
   const op = await api<Operation>("POST", "/worlds:generate", request(mediaAssetId));
   console.log(`Operation ${op.operation_id}`);
   const done = await poll(op.operation_id);
