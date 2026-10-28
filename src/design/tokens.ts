@@ -12,11 +12,16 @@ export const color = {
   ink2: "#5B5D60",
   ink3: "#9A9C9F",
   line: "#D3D4D2",
-  // 2D gallery (/gallery): pure white page, Framer-site text greys and link blue.
+  // 2D gallery (the home page): pure white page, Framer-site text greys and link blue.
   paper: "#FFFFFF",
   inkSoft: "#333333",
   inkMuted: "#86868B",
   link: "#0099FF",
+  // Glossy white controls: knurled chrome rim, white gloss face.
+  chromeLight: "#F7F7F8",
+  chromeDark: "#D6D7DA",
+  glossHi: "#FFFFFF",
+  glossLo: "#ECECEF",
 } as const;
 
 export const regionColor: Record<Region, string> = {

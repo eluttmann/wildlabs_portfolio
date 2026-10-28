@@ -1,8 +1,8 @@
 # Design system: the 2D world
 
-The 2D gallery (`/gallery`) and the project pages (`/ombi`, `/autoprospector`, `/dbc`, `/vr`) share one
+The 2D gallery (the home page, `/`) and the project pages (`/ombi`, `/autoprospector`, `/dbc`, `/vr`) share one
 system, taken from the Framer home page: white walls, black type, the work does the talking. The 3D
-world on `/` keeps its own gallery-white palette and Kelly region colours.
+world (`/?view=3d`) keeps its own gallery-white palette and Kelly region colours.
 
 Tokens live in `src/app/globals.css`. Colours are mirrored in `src/design/tokens.ts`; the type scale,
 widths and breakpoints are DOM-only.

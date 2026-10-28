@@ -156,7 +156,7 @@ Six structures, prototyped in one sandbox with a switcher (`src/lab/layouts.ts`)
 - [ ] Glass droplet orbs: refraction, a live preview of each project's world inside, hover and press feel
 - [ ] Camera director: viewpoint rails, Powers-of-Ten zoom, interruptible transitions
 - [ ] Ask bar v1: `/api/chat` using AI SDK tools `focusProject`, `setLens`, `flyTo` and `showPanel`, grounded in the content
-- [ ] 2D ↔ 3D toggle (state persisted, URL addressable)
+- [x] 2D ↔ 3D toggle, URL addressable (`/` is 2D, `/?view=3d` is 3D). Not persisted yet: 2D is the default until the 3D world is built out
 - **Exit:** walking the home world end to end on desktop and phone within the performance budget
 
 ### M3: Project scenes (Nov 3 – 8)
@@ -295,4 +295,5 @@ Run each track in its own Claude Code session, in its own git worktree and branc
 | Oct 20 | Keep model IDs in one config file (`src/lib/ai/models.ts`, created in M2) | Low lock-in; one-line model swaps |
 | Oct 21 | Rendering work runs as its own session from `docs/briefs/rendering.md` (absorbs Track A) | Focused context for World Labs and Nano Banana |
 | Oct 25 | PRs open ready for review once `pnpm check` passes; drafts only for unfinished work or open decisions | Drafts added a click to small, finished PRs; Eric reviews before merging either way |
+| Oct 26 | The home page defaults to 2D; a glossy segmented toggle switches to 3D at `/?view=3d`, and `/gallery` redirects home | The 3D world isn't built out yet; one URL keeps both views shareable |
 

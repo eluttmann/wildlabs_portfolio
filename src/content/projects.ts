@@ -44,7 +44,7 @@ export interface Project {
   thesis: { spatialToAI: number; creationToKnowledge: number };
   location: ProjectLocation;
   keywords: string[];
-  /** How the project hangs in the 2D gallery (/gallery). */
+  /** How the project hangs in the 2D gallery (the home page). */
   exhibit?: Exhibit;
   /** Long-form project page; its gallery exhibit links there. */
   caseStudy?: CaseStudy;
@@ -209,7 +209,7 @@ export const projects: Project[] = [
     slug: "ombi",
     title: "Ombi",
     org: "Founder",
-    role: "Product · Design · Go-to-market",
+    role: "Founder | Product, design, eng, GTM",
     summary: "Previews experiences through video.",
     url: "https://www.2d.ericluttmann.com/ombi/",
     caseStudy: ombi,
@@ -225,7 +225,7 @@ export const projects: Project[] = [
     exhibit: {
       title: "Ombi",
       description: "Preview experiences through video",
-      credits: "Founder | Product, Design, GTM …",
+      credits: "Founder | Product, design, eng, GTM",
       media: {
         kind: "video",
         src: "/exhibits/ombi.mp4",
@@ -326,8 +326,8 @@ export const projects: Project[] = [
     slug: "pillar",
     title: "Pillar",
     org: "Founder",
-    role: "Product · Design · Engineering",
-    summary: "Spatial AI that helps LA homeowners get insurance after the fires.",
+    role: "Founding Product Builder",
+    summary: "Spatial AI that helps homeowners get insurance in fire risk areas.",
     url: "https://buildwithpillar.com/",
     region: "applications",
     scale: "home",
@@ -340,8 +340,8 @@ export const projects: Project[] = [
     keywords: ["spatial", "ai", "home", "insurance", "wildfire", "founder", "geospatial", "property"],
     exhibit: {
       title: "Pillar",
-      description: "Spatial AI to help LA homeowners get insurance after the fires.",
-      credits: "Product Builder (Design, Eng, Mgmt)",
+      description: "Spatial AI to help homeowners get insurance in fire risk areas",
+      credits: "Founding Product Builder",
       href: "https://buildwithpillar.com/",
       media: {
         kind: "image",
