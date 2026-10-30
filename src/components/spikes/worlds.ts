@@ -25,6 +25,8 @@ export interface SplatWorld {
   orbs: { slug: string; position: Vec3; size: number }[];
   /** How far the camera may pull back from its target, in metres; defaults to 14. */
   maxDistance?: number;
+  /** A sharp 2:1 panorama in the world's asset folder, drawn at infinity behind the splats (development only). */
+  backdrop?: string;
 }
 
 const meadowOrbs: SplatWorld["orbs"] = [
@@ -89,5 +91,71 @@ export const yosemiteMeadowImage: SplatWorld = {
   maxDistance: 40,
 };
 
-/** The worlds /spikes/yosemite can switch between; the newest drafts first. */
-export const yosemiteWorlds = [yosemiteMeadowText, yosemiteMeadowImage, yosemite];
+/*
+ * Fidelity round (Oct 30): full-tier worlds, judged standing still at the standpoint on a 16-inch MacBook Pro.
+ */
+export const yosemiteTextPlus: SplatWorld = {
+  id: "yosemite-meadow-text-plus",
+  label: "Yosemite, El Capitan Meadow · option B, text, marble-1.1-plus",
+  short: "B · text plus",
+  worldId: "97ee9c0f-05a6-4f3f-adfb-6275d7b13f24",
+  spz: {
+    "100k": "https://cdn.marble.worldlabs.ai/97ee9c0f-05a6-4f3f-adfb-6275d7b13f24/53ba97fd-2a67-4138-874c-a32b01b67557_dust_100k.spz",
+    "150k": "https://cdn.marble.worldlabs.ai/97ee9c0f-05a6-4f3f-adfb-6275d7b13f24/d4eeabd3-b943-4b0e-866e-c329187a3805_ceramic_150k.spz",
+    "500k": "https://cdn.marble.worldlabs.ai/97ee9c0f-05a6-4f3f-adfb-6275d7b13f24/04274a56-6bd2-4ea2-8198-70b69fe3e204_ceramic_500k.spz",
+    full_res: "https://cdn.marble.worldlabs.ai/97ee9c0f-05a6-4f3f-adfb-6275d7b13f24/7346f401-ac13-4b91-8905-914d91d26dfd_ceramic.spz",
+  },
+  metricScale: 1.7702996730804443,
+  groundOffset: 1.1088249683380127,
+  camera: { position: [0, 1.6, 0], target: [0, 1.2, -10] },
+  orbs: meadowOrbs,
+  backdrop: "pano.jpg",
+};
+
+/** Option A: IMG_9486 composited at its true width into an 8K panorama (scripts/render/pano_composite.py). */
+export const yosemitePhoto11: SplatWorld = {
+  id: "yosemite-photo-11",
+  label: "Yosemite, El Capitan Meadow · option A, your photo, marble-1.1",
+  short: "A · photo 1.1",
+  worldId: "f37bbf05-3b4c-44c1-9bdb-6f5f8cd82efa",
+  spz: {
+    "100k": "https://cdn.marble.worldlabs.ai/f37bbf05-3b4c-44c1-9bdb-6f5f8cd82efa/ecae8bf1-a49e-4416-93c4-680beff4e256_dust_100k.spz",
+    "150k": "https://cdn.marble.worldlabs.ai/f37bbf05-3b4c-44c1-9bdb-6f5f8cd82efa/ccf60c7d-94ba-4212-9303-2cded2e39031_ceramic_150k.spz",
+    "500k": "https://cdn.marble.worldlabs.ai/f37bbf05-3b4c-44c1-9bdb-6f5f8cd82efa/1a8f7196-7d5c-4a4b-954b-0acdde9410cd_ceramic_500k.spz",
+    full_res: "https://cdn.marble.worldlabs.ai/f37bbf05-3b4c-44c1-9bdb-6f5f8cd82efa/e5944abf-bd31-4793-9709-e8ce60857387_ceramic.spz",
+  },
+  metricScale: 2.601943254470825,
+  groundOffset: 1.1130276918411255,
+  camera: { position: [0, 1.6, 0], target: [0, 1.2, -10] },
+  orbs: meadowOrbs,
+  backdrop: "backdrop-8k.jpg",
+};
+
+/** Option A again, from the same 8K panorama at the top tier. */
+export const yosemitePhotoPlus: SplatWorld = {
+  id: "yosemite-photo-plus",
+  label: "Yosemite, El Capitan Meadow · option A, your photo, marble-1.1-plus",
+  short: "A · photo plus",
+  worldId: "83440d8a-39f8-4262-ac0e-878a14a5a86e",
+  spz: {
+    "100k": "https://cdn.marble.worldlabs.ai/83440d8a-39f8-4262-ac0e-878a14a5a86e/4aa36b9c-5940-446b-bd37-c299bcdf47ae_dust_100k.spz",
+    "150k": "https://cdn.marble.worldlabs.ai/83440d8a-39f8-4262-ac0e-878a14a5a86e/a8fcb52c-1eec-4545-bfbc-9f4f214de7a0_ceramic_150k.spz",
+    "500k": "https://cdn.marble.worldlabs.ai/83440d8a-39f8-4262-ac0e-878a14a5a86e/c3b404f8-8467-48b8-82f8-ffbe115bac9a_ceramic_500k.spz",
+    full_res: "https://cdn.marble.worldlabs.ai/83440d8a-39f8-4262-ac0e-878a14a5a86e/cd908c39-9dd8-43e7-8bfc-5b61bb66859d_ceramic.spz",
+  },
+  metricScale: 1.6856319904327393,
+  groundOffset: 0.9198150634765625,
+  camera: { position: [0, 1.6, 0], target: [0, 1.2, -10] },
+  orbs: meadowOrbs,
+  backdrop: "backdrop-8k.jpg",
+};
+
+/** The worlds /spikes/yosemite can switch between; the newest first. */
+export const yosemiteWorlds = [
+  yosemitePhotoPlus,
+  yosemitePhoto11,
+  yosemiteTextPlus,
+  yosemiteMeadowText,
+  yosemiteMeadowImage,
+  yosemite,
+];

@@ -2,11 +2,14 @@
 //
 //   pnpm dev   # in another terminal
 //   node scripts/render/review-sheet.mts --world yosemite-meadow-text [--world …] [--res full_res] [--out <dir>]
+//     [--look "tone=none&blur=0" --tag sharp] [--views 00m-north,00m-west]
 //
 // Drives Chrome through the DevTools protocol (not `--screenshot`, which fires before the splats load). For each
 // world it waits for the page to drop its "Loading world" message, lets Spark settle, and saves one JPEG per view:
 // four directions at the viewer, then forward views walked 10, 20 and 40 m down the path, which show where the world
-// degrades. Files land in ~/build/wildlabs-assets/reviews/<world>/ by default (never in git).
+// degrades. Captures match a 16-inch MacBook Pro at full screen (1728×1117 at 2×). `--look` passes render settings
+// (see pickLook in SplatWorldScene) and `--tag` names their folder. Files land in
+// ~/build/wildlabs-assets/reviews/<world>[/<tag>]/ by default (never in git).
 import { spawn } from "node:child_process";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
@@ -19,6 +22,9 @@ const { values } = parseArgs({
     res: { type: "string", default: "full_res" },
     base: { type: "string", default: "http://localhost:3000" },
     out: { type: "string" },
+    look: { type: "string", default: "" },
+    tag: { type: "string" },
+    views: { type: "string" },
     chrome: { type: "string", default: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
   },
 });
@@ -32,6 +38,7 @@ const VIEWS = [
   { name: "20m-north", at: 20, yaw: 0 },
   { name: "40m-north", at: 40, yaw: 0 },
 ];
+const SCREEN = { width: 1728, height: 1117, deviceScaleFactor: 2 };
 const SETTLE_MS = 4_000;
 const LOAD_TIMEOUT_MS = 120_000;
 const PORT = 9333;
@@ -41,7 +48,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const profile = await mkdtemp(path.join(tmpdir(), "review-sheet-"));
 const chrome = spawn(
   values.chrome,
-  [`--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, "--headless=new", "--window-size=1600,900", "--hide-scrollbars", "about:blank"],
+  [`--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, "--headless=new", `--window-size=${SCREEN.width},${SCREEN.height}`, "--hide-scrollbars", "about:blank"],
   { stdio: "ignore" },
 );
 
@@ -71,14 +78,17 @@ try {
       pending.set(id, resolve as (result: unknown) => void);
       ws.send(JSON.stringify({ id, method, params }));
     });
+  await send("Emulation.setDeviceMetricsOverride", { ...SCREEN, mobile: false });
   const evaluate = async (expression: string) =>
     (await send<{ result: { value: unknown } }>("Runtime.evaluate", { expression, returnByValue: true })).result.value;
 
   for (const world of values.world) {
-    const dir = values.out ?? path.join(homedir(), "build/wildlabs-assets/reviews", world);
+    const dir = values.out ?? path.join(homedir(), "build/wildlabs-assets/reviews", world, values.tag ?? "");
     await mkdir(dir, { recursive: true });
-    for (const view of VIEWS) {
-      const url = `${values.base}/spikes/yosemite?world=${world}&res=${values.res}&at=${view.at}&yaw=${view.yaw}`;
+    const wanted = values.views?.split(",");
+    for (const view of VIEWS.filter((v) => !wanted || wanted.includes(v.name))) {
+      const look = values.look ? `&${values.look}` : "";
+      const url = `${values.base}/spikes/yosemite?world=${world}&res=${values.res}&at=${view.at}&yaw=${view.yaw}${look}`;
       await send("Page.navigate", { url });
       const started = Date.now();
       await sleep(1_000);
