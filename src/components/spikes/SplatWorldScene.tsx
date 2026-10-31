@@ -7,6 +7,7 @@ import { SparkRenderer, SplatFileType, SplatMesh } from "@sparkjsdev/spark";
 import { Vector3 } from "three";
 import { projectBySlug } from "@/content/projects";
 import { Orb } from "@/components/lab/Orb";
+import type { Vec3 } from "@/lab/layouts";
 import type { SplatRes, SplatWorld } from "./worlds";
 
 export type WorldStatus = "loading" | "ready" | "error";
@@ -24,6 +25,20 @@ function pickRes(): SplatRes {
   const asked = new URLSearchParams(window.location.search).get("res");
   if (RESOLUTIONS.includes(asked as SplatRes)) return asked as SplatRes;
   return window.matchMedia("(max-width: 767px)").matches ? "500k" : "full_res";
+}
+
+/**
+ * Review views: `?at=<metres>` walks the viewer that far down the path (forward is −z) and `?yaw=<degrees>` turns
+ * them left, so a review sheet can judge every world from the same spots (scripts/render/review-sheet.mts).
+ */
+function pickView(world: SplatWorld): SplatWorld["camera"] {
+  const params = new URLSearchParams(window.location.search);
+  const at = Number(params.get("at") ?? 0);
+  const yaw = (Number(params.get("yaw") ?? 0) * Math.PI) / 180;
+  if (!at && !yaw) return world.camera;
+  const [x, y, z] = world.camera.position;
+  const eye: Vec3 = [x, y, z - at];
+  return { position: eye, target: [eye[0] - Math.sin(yaw) * 10, 1.2, eye[2] - Math.cos(yaw) * 10] };
 }
 
 function splatUrl(world: SplatWorld, res: SplatRes) {
@@ -131,7 +146,7 @@ function CameraRig({ world, selected }: { world: SplatWorld; selected: string | 
       makeDefault
       smoothTime={0.7}
       minDistance={1}
-      maxDistance={14}
+      maxDistance={world.maxDistance ?? 14}
       minPolarAngle={Math.PI * 0.3}
       maxPolarAngle={Math.PI * 0.56}
     />
@@ -149,13 +164,15 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
     [onStatus],
   );
   const [selected, setSelected] = useState<string | null>(null);
+  const [camera] = useState(() => pickView(world));
+  const viewed = useMemo(() => ({ ...world, camera }), [world, camera]);
 
   return (
     <Canvas
       dpr={[1, 2]}
       // Spark recommends no MSAA: it doesn't improve splats and costs a lot of fill rate.
       gl={{ antialias: false }}
-      camera={{ position: world.camera.position, fov: 55, near: 0.05, far: 2000 }}
+      camera={{ position: camera.position, fov: 55, near: 0.05, far: 2000 }}
       onPointerMissed={() => setSelected(null)}
     >
       {/* No scene background until the world loads: the transparent canvas shows the gallery white behind it. */}
@@ -182,7 +199,7 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
           );
         })}
 
-      <CameraRig world={world} selected={selected} />
+      <CameraRig world={viewed} selected={selected} />
     </Canvas>
   );
 }

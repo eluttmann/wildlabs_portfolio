@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import type { WorldStatus } from "./SplatWorldScene";
 import type { SplatWorld } from "./worlds";
@@ -13,8 +13,8 @@ const STATUS_COPY: Record<WorldStatus, string | null> = {
   error: "This world isn't available here yet",
 };
 
-/** Full-screen splat world with its orbs; the label stays in the gallery frame, outside the image. */
-export function SplatWorldView({ world }: { world: SplatWorld }) {
+/** Full-screen splat world with its orbs; the label stays in the gallery frame, outside the image. Children overlay it. */
+export function SplatWorldView({ world, children }: { world: SplatWorld; children?: ReactNode }) {
   const [status, setStatus] = useState<WorldStatus>("loading");
   const message = STATUS_COPY[status];
 
@@ -29,6 +29,7 @@ export function SplatWorldView({ world }: { world: SplatWorld }) {
       <div className="pointer-events-none absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.16em] text-ink">
         {world.label}
       </div>
+      {children}
     </main>
   );
 }
