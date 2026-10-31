@@ -3,7 +3,8 @@
 Where the rendering work stands, for whoever picks it up next. Per-generation detail (prompts, costs, verdicts)
 is in `LOG.md`; the brief is `docs/briefs/rendering.md`.
 
-**Last updated:** Oct 28 2026 · **Branch:** `spike/yosemite-meadow-drafts` (El Capitan Meadow drafts)
+**Last updated:** Oct 30 2026 · **Branch:** `spike/yosemite-fidelity` (fidelity round, on top of
+`spike/yosemite-meadow-drafts`)
 · **Preview of the spike:** https://wildlabs-portfolio-d87itk5bk-luttmann.vercel.app/spikes/yosemite (Vercel sign-in;
 spikes return 404 on production)
 
@@ -18,12 +19,17 @@ It holds the staged pipeline, quality bar, integration standards and tool map us
 | Yosemite world, draft 1 (`marble-1.1`) | Done but **not faithful**: Marble shrank the wide photo into the front view, duplicated El Capitan and left a floating sky artifact. Meadow, trees and haze are good. |
 | `/spikes/yosemite` | Works locally and on preview deployments: Spark, real-world scale, three glass orbs reflecting a splat-rendered environment map. All `/spikes/*` pages return 404 on production (`src/app/spikes/layout.tsx`). |
 | El Capitan Meadow drafts (bike ride stop 1, `marble-1.0-draft`) | Done Oct 28, **waiting on Eric** before `marble-1.1`. Text only: right layout, about 8–10 m reach, but a cyclist on the path and flat overcast light. Text plus hero still: El Capitan three times, about 5 m reach. Both switchable at `/spikes/yosemite`. Detail in `LOG.md` session 2. |
+| El Capitan Meadow fidelity round | Done Oct 30. **Option A** (Eric's photo at true width in an 8K panorama) at `marble-1.1` and `marble-1.1-plus`, and **option B** (text only) at `marble-1.1-plus`. Renderer: no tone curve, viewer at the capture height, splats only within 25 m with the 8K panorama behind them. Option A at `marble-1.1-plus` reads like a photograph standing still. Detail in `LOG.md` session 3. |
 | Yosemite stills | Done: `public/renders/yosemite-{hero,spires,meadow}.webp` |
 | San Francisco, Venice Beach, Rio | Not started; waiting on Eric's photos |
 
-## Balances (Oct 28, after the meadow drafts)
+## Balances (Oct 30, after the fidelity round)
 
-- **World Labs:** 4,960 credits (started at 7,000; draft 1 cost 1,580; the two meadow drafts 230 each).
+- **World Labs API:** 6,880 credits (Eric added $10, 12,500 credits; the fidelity round spent 7,580 and the
+  near-field regeneration 3,000). API credits
+  cost $1 per 1,250 at https://platform.worldlabs.ai/billing.
+- **Marble web app:** Standard plan, 20,000 credits a month. A separate balance: it can't pay for API calls, but the
+  web app can generate from an uploaded panorama and export splat files.
 - **AI Gateway:** $55 of paid credit added by Eric; this session used about $0.76 (7 Nano Banana 2 images).
 
 ## Decisions made
@@ -44,9 +50,8 @@ It holds the staged pipeline, quality bar, integration standards and tool map us
 
 ## Open items (need Eric)
 
-0. **El Capitan Meadow: pick a direction before `marble-1.1` (1,580 credits).** Recommended: text only, with the
-   prompt tightened (no people or cyclists, low warm sun, one path), as a second 230-credit draft first. See
-   `LOG.md` session 2 next steps.
+0. **El Capitan Meadow base is `yosemite-photo-plus-v2`** (Eric chose photo plus on Oct 30; near field cleaned,
+   `LOG.md` session 4). Next: cut the stone behind the viewer and soften the 25 m seam, then orientation and orbs.
 1. **Yosemite draft 2: fix the panorama, then draft, then final (needs approval; about 1,650 credits plus
    about $0.40).** This replaces the earlier multi-image plan (1,600 credits, with no preview before the spend).
    - Start from draft 1's `worlds/yosemite/pano.jpg` (4608×2304, already a 2:1 panorama).

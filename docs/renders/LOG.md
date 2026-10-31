@@ -165,3 +165,108 @@ Caveats:
    multi-image prompt or composite it into a 2:1 panorama first (STATUS open item 1).
 3. **Reach is about 10 m at best** at draft quality. A full `marble-1.1` world is denser but has a similar reach
    (draft 1); a longer ride needs several stops or Marble Compose.
+
+## Yosemite fidelity round (session 3, Oct 30 2026)
+
+Eric's brief: the meadow reads low-fidelity ("blurry, scratchy, kind of pixelated… intense blurs or skews"). Goal for
+this round: a still frame from the standpoint that reads like a photo on a 16-inch MacBook Pro at full screen.
+Two options: A from Eric's photo, B from text only. Orientation and walking come later.
+
+### What was wrong, and what fixed it
+
+| Problem | Cause | Fix | Cost |
+|---|---|---|---|
+| Dark, muddy colour | React Three Fiber applies ACES Filmic tone mapping by default; it flattened the splats | `NoToneMapping` (`?tone=aces` to compare) | Free |
+| Floaters overhead, wavy horizon bands, streaky ground at the feet | The viewer stood at 1.6 m; Marble's camera sat at its ground offset (0.5 to 1.1 m). Off the capture point the splats stretch | View from the capture height (`?eye=standing` to compare) | Free |
+| Pixelated mountains and sky, "scratchy" trees | Marble paints everything far away from a 4,608 px panorama (13 px per degree; the screen shows about 27) and resizes any input panorama down to that. Splat trees at distance break into needles | **Near/far split:** splats only within 25 m (Spark `SplatEdit` sphere, soft edge), the 8K panorama drawn at infinity behind them (`?backdrop=off`, `?cull=`, `?turn=`) | Free |
+| Soft near field, short reach | The draft tier | `marble-1.1` or `marble-1.1-plus` | 1,500 to 3,080 |
+| Spark's anti-alias blur and focal adjustment | Tested at 0 and 2 | No visible difference at 100%; left at defaults | Free |
+
+three.js starts an equirectangular background 90° away from Marble's panorama, so the backdrop turns 90°.
+
+### Option A input: Eric's photo at its true width
+
+`scripts/render/pano_composite.py` maps the cleaned IMG_9486 (cylindrical, about 175° by 56°) onto an 8192×4096
+equirectangular panorama row by row, over draft 1's panorama for everything the photo doesn't cover. Fixes along the
+way: draft 1's blue sky rectangles (the photo's own sky is extended above it and under its top blend) and a stitching
+band in the photo's top rows (40 rows trimmed). Output: `inputs/yosemite/pano/option-a-8k.jpg`, 22.8 px per degree.
+Still from draft 1: the canopy overhead and the granite faces at both sides (they read as the valley walls).
+
+### Generations
+
+| Date | Tool · model | Input | Cost | Time | Output | Verdict |
+|---|---|---|---|---|---|---|
+| Oct 30 | World API · `marble-1.1-plus`, text | Tightened prompt (empty path, sun low in the west behind the viewer, El Capitan lit warm, sharp detail) | 3,080 credits (80 pano, 1,500 base, 1,500 variable) | 8.2 min | `worlds/yosemite-meadow-text-plus/` · `97ee9c0f-05a6-4f3f-adfb-6275d7b13f24` | Big step up from the draft: crisp path, fine grass, clean to 20 m. Dusk rather than late afternoon; still dark overall. Not faithful: a huge cliff straight ahead rather than El Capitan on the left. **A person far down the path**, from Marble's own panorama. |
+| Oct 30 | World API · `marble-1.1`, pano | `option-a-8k.jpg` | 1,500 credits | 5.3 min | `worlds/yosemite-photo-11/` · `f37bbf05-3b4c-44c1-9bdb-6f5f8cd82efa` | **Most photographic so far.** Real daylight, believable grass at the feet, Cathedral Rocks and the ridge read like the photo. Clean to 10 m, smeared by 20 m. Forward faces the photo's centre (the sun); El Capitan sits about 55° left. |
+| Oct 30 | World API · `marble-1.1-plus`, pano | `option-a-8k.jpg` | 3,000 credits | 8.3 min | `worlds/yosemite-photo-plus/` · `83440d8a-39f8-4262-ac0e-878a14a5a86e` | Better near trees (real trunks and leaves, no smear) and smoother ground than `marble-1.1`; a dark patch under the camera and a slightly flatter meadow at 10 m. A modest gain for twice the credits once the backdrop handles the distance. |
+
+**Balance:** 4,960 → 9,880 API credits (Eric added $10 of API credits; this round spent 7,580). The Marble web app's
+Standard plan (20,000 credits a month) is a separate balance.
+
+![Before and after: the Oct 28 text draft; option B at marble-1.1-plus with its backdrop; option A at marble-1.1-plus with the 8K backdrop, north and west](yosemite-fidelity-round.webp)
+
+![Option A at 100%: splats alone (top) and with the 8K backdrop beyond 25 m (bottom)](yosemite-backdrop-crop.webp)
+
+### Verdict
+
+- **The biggest lever was the near/far split, not the model tier.** With splats only for the near meadow and Eric's
+  photo for everything else, the frame reads like a photograph at 100% on a MacBook.
+- **Option A beats option B** on fidelity and faithfulness: real El Capitan, real light, an 8K backdrop. B's
+  backdrop is limited to Marble's 4,608 px panorama and carries a person.
+- **`marble-1.1-plus` over `marble-1.1`** for option A: cleaner near trees, at 3,000 against 1,500 credits.
+
+### Next steps (need Eric)
+
+1. Pick option A at `marble-1.1-plus` as the meadow's base (recommended).
+2. Clean what remains near the viewer: the dark patch underfoot, the canopy overhead from draft 1's panorama, the
+   seam where splats meet the backdrop at 25 m when walking.
+3. Then orientation (face El Capitan or the path), orbs and walking.
+
+## El Capitan Meadow: photo plus chosen, near field cleaned (session 4, Oct 30 2026)
+
+Eric chose option A at `marble-1.1-plus` ("photo plus") and asked to clean the near field and archive the other
+options. Archived: draft 1, the two Oct 28 drafts, option B and option A at `marble-1.1`. Their folders moved to
+`~/build/wildlabs-assets/archive/worlds/` and they left the spike's switcher; world ids and verdicts stay above.
+
+### What the near field showed (new `?pitch=` review views)
+
+- **Overhead:** a pine canopy. Draft 1's panorama invented large pines right beside the viewer, behind the photo's
+  edges; El Capitan Meadow is open, with trees at its edges.
+- **Underfoot:** blurry clumps with dark speckles and a dark shadow under a grass tuft just ahead.
+
+Both come from the 360° panorama, so the fix is upstream: edit the panorama, regenerate the world, swap the backdrop.
+
+### Panorama edits (`scripts/render/pano_faces.py`)
+
+`extract` pulls ordinary perspective views out of the 8K panorama, Nano Banana edits them, `merge` reprojects them
+back with feathered edges and never writes over Eric's photo band (`--protect`), and `sky` paints a gradient above a
+latitude.
+
+| Date | Tool · model | Input | Prompt | Cost | Time | Output | Verdict |
+|---|---|---|---|---|---|---|---|
+| Oct 30 | Gateway · Nano Banana 2, 2K, 16:9 | Back-left view (yaw 135°, 110° wide) | Remove the near pine trunks and overhanging branches; open meadow to a tree line about 80 m away; keep cliffs, sky, light | $0.101 | 20 s | `faces/back-left.edit.png` | Trunks gone, but it reframed: the granite cliff moved toward the centre and thin clouds appeared. Plausible as the north wall; kept. |
+| Oct 30 | Gateway · Nano Banana 2, 2K, 16:9 | Back-right view (yaw 225°) | Same | $0.101 | 19 s | `faces/back-right.edit.png` | Clean, and the cliff stayed in place. |
+| Oct 30 | Gateway · Nano Banana 2, 2K, 1:1 | Straight-down view | Remove the dark shadow streak; evenly lit dry grass and soil | $0.101 | 19 s | `faces/down.edit.png` | Clean. |
+| Oct 30 | Gateway · Nano Banana 2, 2K, 4:3 | Forward-down view (pitch −50°) | Remove the dark shadow under the grass tuft | $0.101 | 21 s | `faces/front-down.edit.png` | **Failed:** shadows kept, warmer cast added. Dropped; the tuft's shadow was lifted in code instead (dark tones only, in that patch). |
+
+Edits came back brighter than their views; a global colour match overcorrected (the originals held the dark trunks
+the edits removed), so each edit is a 50/50 blend of edit and match. Sky painted above 28° (full above 36°) outside
+the photo band. Result: `inputs/yosemite/pano/option-a-8k-v2.jpg`.
+
+### Regeneration
+
+| Date | Tool · model | Input | Cost | Time | Output | Verdict |
+|---|---|---|---|---|---|---|
+| Oct 30 | World API · `marble-1.1-plus`, pano | `option-a-8k-v2.jpg` | 3,000 credits | 8.1 min | `worlds/yosemite-photo-plus-v2/` · `6a49de28-79ab-48e9-a445-c54bbe9c86f7` | **The meadow's base.** Clear sky overhead, even grass underfoot, open meadow behind the viewer to a distant tree line; the front half (Eric's photo) unchanged. Left: a grey stone about a metre behind the viewer that reads like foil, one smeary pine at the 25 m cut-off, a long tree shadow on the right (natural). |
+
+**Balance:** 9,880 → 6,880 API credits. Nano Banana for this session about $0.40.
+
+![v1 (top) and v2 (bottom): behind the viewer, overhead, underfoot](yosemite-near-field-v1-v2.webp)
+
+The uncleaned photo plus is archived with the others; `/spikes/yosemite` now shows only `yosemite-photo-plus-v2`.
+
+### Next steps
+
+1. Free, in the viewer: cut the grey stone behind the viewer and soften the 25 m seam (Spark `SplatEdit`).
+2. Orientation: what the visitor faces on arrival (El Capitan is about 55° left of forward), then orbs at 4 to 6 m.
+3. Hosting the 8K backdrop for preview and production (the M2 hosting decision).
