@@ -92,12 +92,14 @@ function pickView(world: SplatWorld, look: Look): SplatWorld["camera"] {
   const params = new URLSearchParams(window.location.search);
   const at = Number(params.get("at") ?? 0);
   const yaw = (Number(params.get("yaw") ?? 0) * Math.PI) / 180;
-  if (!at && !yaw && look.eye === "standing") return world.camera;
+  if (!at && !yaw && !params.has("pitch") && look.eye === "standing") return world.camera;
   const [x, y, z] = world.camera.position;
   // Marble's camera sits at the raw origin, which the ground offset lifts to this height.
   const eyeY = look.eye === "capture" ? world.groundOffset : y;
   const eye: Vec3 = [x, eyeY, z - at];
-  return { position: eye, target: [eye[0] - Math.sin(yaw) * 10, eyeY - 0.4, eye[2] - Math.cos(yaw) * 10] };
+  // `?pitch=<degrees>` tilts the view up (positive) or down, to review the sky overhead and the ground underfoot.
+  const rise = params.has("pitch") ? Math.tan((Number(params.get("pitch")) * Math.PI) / 180) * 10 : -0.4;
+  return { position: eye, target: [eye[0] - Math.sin(yaw) * 10, eyeY + rise, eye[2] - Math.cos(yaw) * 10] };
 }
 
 function splatUrl(world: SplatWorld, res: SplatRes) {
@@ -236,7 +238,9 @@ function CameraRig({ world, selected }: { world: SplatWorld; selected: string | 
     }
   }, [world, selected]);
 
-  // Splat worlds hold up near where the source photo was taken; keep the viewer close to it.
+  // Splat worlds hold up near where the source photo was taken; keep the viewer close to it. A `?pitch=` review
+  // view needs to look straight up or down, past the usual tilt limits.
+  const [freeTilt] = useState(() => new URLSearchParams(window.location.search).has("pitch"));
   return (
     <CameraControls
       ref={controls}
@@ -244,8 +248,8 @@ function CameraRig({ world, selected }: { world: SplatWorld; selected: string | 
       smoothTime={0.7}
       minDistance={1}
       maxDistance={world.maxDistance ?? 14}
-      minPolarAngle={Math.PI * 0.3}
-      maxPolarAngle={Math.PI * 0.56}
+      minPolarAngle={freeTilt ? 0.02 : Math.PI * 0.3}
+      maxPolarAngle={freeTilt ? Math.PI - 0.02 : Math.PI * 0.56}
     />
   );
 }

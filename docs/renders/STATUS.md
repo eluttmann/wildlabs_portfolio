@@ -25,7 +25,8 @@ It holds the staged pipeline, quality bar, integration standards and tool map us
 
 ## Balances (Oct 30, after the fidelity round)
 
-- **World Labs API:** 9,880 credits (Eric added $10, 12,500 credits; the fidelity round spent 7,580). API credits
+- **World Labs API:** 6,880 credits (Eric added $10, 12,500 credits; the fidelity round spent 7,580 and the
+  near-field regeneration 3,000). API credits
   cost $1 per 1,250 at https://platform.worldlabs.ai/billing.
 - **Marble web app:** Standard plan, 20,000 credits a month. A separate balance: it can't pay for API calls, but the
   web app can generate from an uploaded panorama and export splat files.
@@ -49,8 +50,8 @@ It holds the staged pipeline, quality bar, integration standards and tool map us
 
 ## Open items (need Eric)
 
-0. **El Capitan Meadow: confirm option A at `marble-1.1-plus` as the base** (Oct 30 fidelity round, `LOG.md`
-   session 3). Then clean the near field (dark patch underfoot, canopy overhead) before orientation and orbs.
+0. **El Capitan Meadow base is `yosemite-photo-plus-v2`** (Eric chose photo plus on Oct 30; near field cleaned,
+   `LOG.md` session 4). Next: cut the stone behind the viewer and soften the 25 m seam, then orientation and orbs.
 1. **Yosemite draft 2: fix the panorama, then draft, then final (needs approval; about 1,650 credits plus
    about $0.40).** This replaces the earlier multi-image plan (1,600 credits, with no preview before the spend).
    - Start from draft 1's `worlds/yosemite/pano.jpg` (4608×2304, already a 2:1 panorama).

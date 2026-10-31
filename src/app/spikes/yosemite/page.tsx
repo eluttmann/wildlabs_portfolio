@@ -25,7 +25,10 @@ async function YosemiteWorld({ searchParams }: Pick<PageProps<"/spikes/yosemite"
 
   return (
     <SplatWorldView key={world.id} world={world}>
-      <nav className="absolute top-4 left-4 flex gap-4 text-[11px] uppercase tracking-[0.16em]">
+      <nav
+        hidden={yosemiteWorlds.length < 2}
+        className="absolute top-4 left-4 flex gap-4 text-[11px] uppercase tracking-[0.16em]"
+      >
         {yosemiteWorlds.map((w) => (
           <Link
             key={w.id}

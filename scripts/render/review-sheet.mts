@@ -87,8 +87,9 @@ try {
     await mkdir(dir, { recursive: true });
     const wanted = values.views?.split(",");
     for (const view of VIEWS.filter((v) => !wanted || wanted.includes(v.name))) {
-      const look = values.look ? `&${values.look}` : "";
-      const url = `${values.base}/spikes/yosemite?world=${world}&res=${values.res}&at=${view.at}&yaw=${view.yaw}${look}`;
+      // `--look` goes first: URLSearchParams.get returns the first value, so its settings override the view's.
+      const look = values.look ? `${values.look}&` : "";
+      const url = `${values.base}/spikes/yosemite?${look}world=${world}&res=${values.res}&at=${view.at}&yaw=${view.yaw}`;
       await send("Page.navigate", { url });
       const started = Date.now();
       await sleep(1_000);
