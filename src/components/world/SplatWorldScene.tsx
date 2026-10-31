@@ -35,11 +35,22 @@ interface SceneProps {
 
 const RESOLUTIONS: SplatRes[] = ["100k", "150k", "500k", "full_res"];
 
-/** Plan budget: about 500K splats on phones, full resolution on desktop. `?res=` overrides. */
-function pickRes(): SplatRes {
+/**
+ * Plan budget: the first frame comes from 500K splats (about 8 MB); desktops then upgrade to full resolution (about
+ * 70 MB) in place, phones stay at 500K. `?res=` pins one resolution.
+ */
+function pickRes(): { first: SplatRes; final: SplatRes } {
   const asked = new URLSearchParams(window.location.search).get("res");
-  if (RESOLUTIONS.includes(asked as SplatRes)) return asked as SplatRes;
-  return window.matchMedia("(max-width: 767px)").matches ? "500k" : "full_res";
+  if (RESOLUTIONS.includes(asked as SplatRes)) return { first: asked as SplatRes, final: asked as SplatRes };
+  return { first: "500k", final: window.matchMedia("(max-width: 767px)").matches ? "500k" : "full_res" };
+}
+
+function makeMesh(url: string, world: SplatWorld) {
+  const m = new SplatMesh({ url, fileType: SplatFileType.SPZ });
+  m.quaternion.set(1, 0, 0, 0);
+  m.scale.setScalar(world.metricScale);
+  m.position.set(0, world.groundOffset, 0);
+  return m;
 }
 
 /**
@@ -106,11 +117,11 @@ function splatUrl(world: SplatWorld, res: SplatRes) {
   return process.env.NODE_ENV === "development" ? `/spikes/splats/${world.id}/${res}.spz` : world.spz[res];
 }
 
-/** The world's sharp backdrop panorama; served locally only, so previews fall back to the splats' own sky. */
+/** The world's sharp backdrop panorama: a hosted URL everywhere, or a local file in development only. */
 function backdropUrl(world: SplatWorld) {
-  return process.env.NODE_ENV === "development" && world.backdrop
-    ? `/spikes/splats/${world.id}/${world.backdrop}`
-    : null;
+  if (!world.backdrop) return null;
+  if (/^https:\/\//.test(world.backdrop)) return world.backdrop;
+  return process.env.NODE_ENV === "development" ? `/spikes/splats/${world.id}/${world.backdrop}` : null;
 }
 
 const nextFrames = (n: number) =>
@@ -132,7 +143,7 @@ function orbCentroid(world: SplatWorld) {
  * Once loaded, the splats are rendered into an environment map so the glass orbs reflect the valley.
  * The orbs mount only after that, so they never appear in their own reflections.
  */
-function Splats({ world, res, look, onStatus }: SceneProps & { look: Look }) {
+function Splats({ world, res, upgrade, look, onStatus }: SceneProps & { upgrade: SplatRes; look: Look }) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
   const invalidate = useThree((s) => s.invalidate);
@@ -147,15 +158,35 @@ function Splats({ world, res, look, onStatus }: SceneProps & { look: Look }) {
     [gl, invalidate, look],
   );
   const url = splatUrl(world, res);
+  const mesh = useMemo(() => (url ? makeMesh(url, world) : null), [url, world]);
+  const [shown, setShown] = useState(false);
 
-  const mesh = useMemo(() => {
-    if (!url) return null;
-    const m = new SplatMesh({ url, fileType: SplatFileType.SPZ });
-    m.quaternion.set(1, 0, 0, 0);
-    m.scale.setScalar(world.metricScale);
-    m.position.set(0, world.groundOffset, 0);
+  // Once the first resolution is on screen, load the final one hidden beside it and swap in a single frame.
+  const upgradeUrl = upgrade !== res ? splatUrl(world, upgrade) : undefined;
+  const full = useMemo(() => {
+    if (!shown || !upgradeUrl) return null;
+    const m = makeMesh(upgradeUrl, world);
+    m.visible = false;
     return m;
-  }, [url, world]);
+  }, [shown, upgradeUrl, world]);
+
+  useEffect(() => {
+    if (!full || !mesh) return;
+    let cancelled = false;
+    full.initialized
+      .then(async () => {
+        await nextFrames(10);
+        if (cancelled) return;
+        full.visible = true;
+        mesh.visible = false;
+        invalidate();
+      })
+      .catch(() => {}); // Keep the first resolution if the upgrade fails.
+    return () => {
+      cancelled = true;
+      full.dispose();
+    };
+  }, [full, mesh, invalidate]);
 
   useEffect(() => () => spark.dispose(), [spark]);
 
@@ -194,6 +225,7 @@ function Splats({ world, res, look, onStatus }: SceneProps & { look: Look }) {
           }
         }
         onStatus("ready");
+        setShown(true);
       })
       .catch(() => !cancelled && onStatus("error"));
     return () => {
@@ -216,6 +248,7 @@ function Splats({ world, res, look, onStatus }: SceneProps & { look: Look }) {
       <primitive object={spark} />
       {cull && <primitive object={cull} />}
       {mesh && <primitive object={mesh} />}
+      {full && <primitive object={full} />}
     </>
   );
 }
@@ -280,7 +313,7 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
       {/* No scene background until the world loads: the transparent canvas shows the gallery white behind it. */}
       <ambientLight intensity={0.4} />
 
-      <Splats world={world} res={res} look={look} onStatus={report} />
+      <Splats world={world} res={res.first} upgrade={res.final} look={look} onStatus={report} />
 
       {ready &&
         world.orbs.map((o, i) => {

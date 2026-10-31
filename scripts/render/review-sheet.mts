@@ -2,7 +2,7 @@
 //
 //   pnpm dev   # in another terminal
 //   node scripts/render/review-sheet.mts --world yosemite-meadow-text [--world …] [--res full_res] [--out <dir>]
-//     [--look "tone=none&blur=0" --tag sharp] [--views 00m-north,00m-west]
+//     [--look "tone=none&blur=0" --tag sharp] [--views 00m-north,00m-west] [--page "/?view=3d"]
 //
 // Drives Chrome through the DevTools protocol (not `--screenshot`, which fires before the splats load). For each
 // world it waits for the page to drop its "Loading world" message, lets Spark settle, and saves one JPEG per view:
@@ -25,6 +25,7 @@ const { values } = parseArgs({
     look: { type: "string", default: "" },
     tag: { type: "string" },
     views: { type: "string" },
+    page: { type: "string", default: "/spikes/yosemite" },
     chrome: { type: "string", default: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" },
   },
 });
@@ -89,7 +90,8 @@ try {
     for (const view of VIEWS.filter((v) => !wanted || wanted.includes(v.name))) {
       // `--look` goes first: URLSearchParams.get returns the first value, so its settings override the view's.
       const look = values.look ? `${values.look}&` : "";
-      const url = `${values.base}/spikes/yosemite?${look}world=${world}&res=${values.res}&at=${view.at}&yaw=${view.yaw}`;
+      const join = values.page.includes("?") ? "&" : "?";
+      const url = `${values.base}${values.page}${join}${look}world=${world}&res=${values.res}&at=${view.at}&yaw=${view.yaw}`;
       await send("Page.navigate", { url });
       const started = Date.now();
       await sleep(1_000);
