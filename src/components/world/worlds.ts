@@ -4,7 +4,8 @@ import type { Vec3 } from "@/lab/layouts";
 export type SplatRes = "100k" | "150k" | "500k" | "full_res";
 
 export interface SplatWorld {
-  /** Also the folder under ~/build/wildlabs-assets/worlds/ that development serves the splats from. */
+  /** Also the folder under ~/build/wildlabs-assets/worlds/ that development serves the splats from (see
+   * app/spikes/splats); deployments load the World Labs CDN files below. */
   id: string;
   label: string;
   /** Name in a spike's world switcher. */
@@ -25,7 +26,10 @@ export interface SplatWorld {
   orbs: { slug: string; position: Vec3; size: number }[];
   /** How far the camera may pull back from its target, in metres; defaults to 14. */
   maxDistance?: number;
-  /** A sharp 2:1 panorama in the world's asset folder, drawn at infinity behind the splats (development only). */
+  /**
+   * A sharp 2:1 panorama drawn at infinity behind the splats: a full URL (Vercel Blob, store `wildlabs-worlds`;
+   * upload with scripts/render/blob-put.mts) or a file name in the world's local asset folder (development only).
+   */
   backdrop?: string;
 }
 
@@ -57,8 +61,12 @@ export const yosemitePhotoPlusV2: SplatWorld = {
   groundOffset: 1.1282386779785156,
   camera: { position: [0, 1.6, 0], target: [0, 1.2, -10] },
   orbs: meadowOrbs,
-  backdrop: "backdrop-8k.jpg",
+  backdrop:
+    "https://zxnwq2jadfb7nyua.public.blob.vercel-storage.com/worlds/yosemite-meadow/backdrop-8k-e30vKpdVnFiwSuDBnevAUiNrUX4zwY.jpg",
 };
+
+/** The 3D home's world. */
+export const homeWorld = yosemitePhotoPlusV2;
 
 /** The worlds /spikes/yosemite can switch between; the current one first. */
 export const yosemiteWorlds = [yosemitePhotoPlusV2];

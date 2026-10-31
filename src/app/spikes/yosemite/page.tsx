@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SplatWorldView } from "@/components/spikes/SplatWorldView";
-import { yosemiteWorlds } from "@/components/spikes/worlds";
+import { SplatWorldView } from "@/components/world/SplatWorldView";
+import { yosemiteWorlds } from "@/components/world/worlds";
 
 export const metadata: Metadata = {
   title: "Yosemite world spike",
