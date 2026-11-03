@@ -17,10 +17,10 @@ export default function WorldPage() {
   return (
     <SplatWorldView world={homeWorld}>
       <h1 className="sr-only">Wild Labs</h1>
-      {/* The bar spans the world, so only its three items catch the pointer; the rest passes through to the scene. */}
+      {/* The bar spans the world, so only the toggle and ABOUT catch the pointer; the rest, including the inert logo, passes through to the scene. */}
       <GalleryNav
         linkHome={false}
-        className="pointer-events-none absolute inset-x-0 top-0 pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))] [&>*]:pointer-events-auto"
+        className="pointer-events-none absolute inset-x-0 top-0 pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))] [&>:not(img)]:pointer-events-auto"
       >
         <ViewToggle current="3d" />
       </GalleryNav>
