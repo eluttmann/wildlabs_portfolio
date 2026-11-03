@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GalleryNav } from "@/components/gallery/GalleryNav";
 import { ViewToggle } from "@/components/shell/ViewToggle";
 import { SplatWorldView } from "@/components/world/SplatWorldView";
 import { homeWorld } from "@/components/world/worlds";
@@ -15,14 +16,14 @@ export const metadata: Metadata = {
 export default function WorldPage() {
   return (
     <SplatWorldView world={homeWorld}>
-      <header className="pointer-events-none absolute left-[max(16px,env(safe-area-inset-left))] top-[calc(20px+env(safe-area-inset-top))] grid gap-1.5 pl-2">
-        <h1 className="text-[22px] font-bold uppercase leading-none tracking-[-0.01em] text-ink">Wild Labs</h1>
-        <p className="max-w-[30ch] text-[13px] leading-snug text-ink-2">Spatial understanding and creation.</p>
-      </header>
-      <ViewToggle
-        current="3d"
-        className="absolute right-[max(16px,env(safe-area-inset-right))] top-[calc(16px+env(safe-area-inset-top))] md:right-auto md:left-1/2 md:-translate-x-1/2"
-      />
+      <h1 className="sr-only">Wild Labs</h1>
+      {/* The bar spans the world, so only the toggle and ABOUT catch the pointer; the rest, including the inert logo, passes through to the scene. */}
+      <GalleryNav
+        linkHome={false}
+        className="pointer-events-none absolute inset-x-0 top-0 pl-[max(24px,env(safe-area-inset-left))] pr-[max(24px,env(safe-area-inset-right))] [&>:not(img)]:pointer-events-auto"
+      >
+        <ViewToggle current="3d" />
+      </GalleryNav>
     </SplatWorldView>
   );
 }
