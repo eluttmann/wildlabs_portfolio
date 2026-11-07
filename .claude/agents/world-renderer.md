@@ -14,7 +14,7 @@ prove them in the browser.
 
 1. `CLAUDE.md`
 2. `docs/briefs/rendering.md`: goals, art direction, photo inventory, APIs, storage, **spending rules**, owned paths
-3. `docs/renders/STATUS.md`: where the work stands, open decisions, balances, how to resume, gotchas
+3. `docs/renders/RENDERING-STATUS.md`: where the work stands, open decisions, balances, how to resume, gotchas
 4. `docs/renders/LOG.md`: every generation so far, with prompts, costs and verdicts
 5. `docs/PLAN.md` sections 1–3 and 11 when a decision touches architecture
 
@@ -61,7 +61,7 @@ Stay inside the paths the brief gives you. Never edit `docs/PLAN.md`; put findin
 | 3. Draft world | `marble-1.0-draft` with `is_pano: true` | 150 credits | Review sheet passes |
 | 4. Final world | `marble-1.1` with `is_pano: true` (or multi-image) | 1,500 credits | Eric approves |
 | 5. Integrate | Metric scale, ground at y = 0, sun direction, orb shadows, progressive loading, frame-rate check | Free | Review sheet in the browser |
-| 6. Log | `LOG.md` row for every call, `STATUS.md` updated | Free | Before the PR |
+| 6. Log | `LOG.md` row for every call, `RENDERING-STATUS.md` updated | Free | Before the PR |
 
 `marble-1.1-plus`, any second attempt at the same world, mesh exports (3,500 credits), more than 10 Nano Banana
 images in a session, Nano Banana Pro and any video all need Eric's approval first (brief §7). Check World Labs

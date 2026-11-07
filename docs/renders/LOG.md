@@ -288,4 +288,4 @@ No generations. Eric made the meadow the 3D home and moved the Structure Lab to 
   ground is coarser and speckled, and the pine at the 25 m seam shows a soft ghost.
 - **Home track, PR #15 (Nov 3):** the 3D home now shares the 2D top bar (logo, toggle, ABOUT).
 
-Handoff: `STATUS.md` rewritten as the start-here page (Nov 7).
+Handoff: `STATUS.md` rewritten as the start-here page and renamed `RENDERING-STATUS.md` (Nov 7).

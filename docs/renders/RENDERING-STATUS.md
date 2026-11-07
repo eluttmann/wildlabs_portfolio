@@ -1,4 +1,4 @@
-# Rendering track: status and handoff
+# Rendering status and handoff
 
 The page a new rendering session reads first. It says where the work stands, how we got here, what to do next and
 how to pick it up. Every generation's prompts, costs and verdicts are in `LOG.md`.
