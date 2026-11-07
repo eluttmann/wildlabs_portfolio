@@ -45,7 +45,7 @@ Stay inside the paths the brief gives you. Never edit `docs/PLAN.md`; put findin
   approach and a reveal. Composition follows Eric's paper sketches (`IMG_3760–3762`), as Gehry's hand models led
   his digital ones.
 - **Same review, every time** (ILM dailies). Judge every world from the same fixed views, not one screenshot.
-- **One master record per world** (NVIDIA scene description, Gehry master model): `src/components/spikes/worlds.ts`
+- **One master record per world** (NVIDIA scene description, Gehry master model): `src/components/world/worlds.ts`
   plus `~/build/wildlabs-assets/worlds/<world>/world.json`: inputs, cost, scale, ground offset, sun direction,
   maturity stage.
 - **Named maturity stages** (Autodesk's building-model levels): `draft` (proves the pipeline), `review` (faithful

@@ -270,3 +270,22 @@ The uncleaned photo plus is archived with the others; `/spikes/yosemite` now sho
 1. Free, in the viewer: cut the grey stone behind the viewer and soften the 25 m seam (Spark `SplatEdit`).
 2. Orientation: what the visitor faces on arrival (El Capitan is about 55° left of forward), then orbs at 4 to 6 m.
 3. Hosting the 8K backdrop for preview and production (the M2 hosting decision).
+
+## The meadow becomes the 3D home (session 5, Oct 30 to Nov 7 2026)
+
+No generations. Eric made the meadow the 3D home and moved the Structure Lab to its own page.
+
+- **PR #13:** `/?view=3d` (the `/world` page) renders `yosemite-photo-plus-v2` with the project orbs; the Structure
+  Lab moved to `/structure`. The world's settings and renderer moved from `src/components/spikes/` to
+  `src/components/world/`, shared by the home and the `/spikes/yosemite` workbench. Splats load at 500K first and
+  swap to full resolution in place on desktop; phones stay at 500K.
+- **Hosting:** a public Vercel Blob store, `wildlabs-worlds`, holds the 8K backdrop (9.9 MB, one-year cache), so
+  preview and production show the sharp far view. `scripts/render/blob-put.mts` uploads without printing the token.
+  The `.spz` files still load from the World Labs CDN.
+- **Merging:** #12 and #13 were stacked PRs and each merged into the branch below it; #14 carried them onto `main`
+  (Oct 31).
+- **Production check (Nov 3):** `/?view=3d` renders the meadow, orbs and Blob backdrop. Captured at 500K splats: the
+  ground is coarser and speckled, and the pine at the 25 m seam shows a soft ghost.
+- **Home track, PR #15 (Nov 3):** the 3D home now shares the 2D top bar (logo, toggle, ABOUT).
+
+Handoff: `STATUS.md` rewritten as the start-here page (Nov 7).
