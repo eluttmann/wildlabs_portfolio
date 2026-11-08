@@ -311,6 +311,10 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.1, creationToKnowledge: 0.9 },
     location: { lat: 38.9, lon: -77.04, label: "Placeholder", confirmed: false },
     keywords: ["geospatial", "ai", "map", "earth", "satellite", "spatial", "data", "planet"],
+    cover: {
+      src: "/projects/marble/cover.webp",
+      alt: "Marble's system view for Stanford University: a data summary above a 3D aerial map of the campus",
+    },
     exhibit: {
       title: "Marble",
       description: "Geospatial AI web-app that lets institutions access decades of spatial data to improve place performance.",
