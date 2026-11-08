@@ -54,7 +54,7 @@ export function ProjectWindow({ project, onClose }: { project: Project; onClose:
         }`}
       >
         {cover && (
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[28px] bg-gallery-shade tablet:aspect-[16/10]">
+          <div className="relative aspect-video w-full overflow-hidden rounded-[28px] bg-gallery-shade">
             <Image src={cover.src} alt={cover.alt} fill sizes="(min-width: 920px) 856px, 100vw" className="object-cover" />
           </div>
         )}

@@ -20,13 +20,15 @@ import { color, font, regionColor } from "@/design/tokens";
  * A floating glass card, after visionOS windows: a frosted, glossy slab with deep rounded corners, the project's
  * image inset with concentric corners, and its title and role set on the glass below. Sizes are metres.
  */
-const WIDTH = 1.2;
+// Landscape, about 3:2 overall (1.4 × 0.94 m), around a 16:9 image: the shape of screens and video, so product shots
+// and project videos fit without heavy cropping.
+const WIDTH = 1.4;
 const PAD = 0.045;
 const IMAGE_W = WIDTH - 2 * PAD;
-const IMAGE_H = IMAGE_W * 0.75; // 4:3
-const TEXT_H = 0.2;
+const IMAGE_H = (IMAGE_W * 9) / 16;
+const TEXT_H = 0.16;
 const HEIGHT = PAD + IMAGE_H + TEXT_H;
-const RADIUS = 0.12;
+const RADIUS = 0.13; // about a tenth of the width, for deep visionOS-style corners
 const IMAGE_RADIUS = RADIUS - PAD; // concentric with the card's corner
 const DEPTH = 0.016;
 const BEVEL = 0.014;
@@ -123,14 +125,14 @@ function paintFace(ctx: CanvasRenderingContext2D, project: Project, image: HTMLI
   ctx.restore();
 
   const textX = px(PAD + 0.02);
-  const titleY = iy + ih + px(0.088);
+  const titleY = iy + ih + px(0.075);
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = color.ink;
   ctx.font = `500 ${px(0.058)}px ${font.sans}`;
   ctx.fillText(project.title, textX, titleY, px(IMAGE_W - 0.04));
   ctx.fillStyle = color.ink2;
   ctx.font = `400 ${px(0.042)}px ${font.sans}`;
-  ctx.fillText(project.role, textX, titleY + px(0.065), px(IMAGE_W - 0.04));
+  ctx.fillText(project.role, textX, titleY + px(0.058), px(IMAGE_W - 0.04));
 }
 
 function useFaceTexture(project: Project) {
