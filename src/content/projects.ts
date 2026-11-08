@@ -46,6 +46,8 @@ export interface Project {
   keywords: string[];
   /** How the project hangs in the 2D gallery (the home page). */
   exhibit?: Exhibit;
+  /** The image on the project's glass card in the 3D world; without one, the card uses the exhibit's image or poster. */
+  cover?: { src: string; alt: string };
   /** Long-form project page; its gallery exhibit links there. */
   caseStudy?: CaseStudy;
 }
@@ -338,6 +340,10 @@ export const projects: Project[] = [
     thesis: { spatialToAI: 0.0, creationToKnowledge: 0.45 },
     location: { lat: 34.05, lon: -118.53, label: "Los Angeles", confirmed: true },
     keywords: ["spatial", "ai", "home", "insurance", "wildfire", "founder", "geospatial", "property"],
+    cover: {
+      src: "/projects/pillar/cover.webp",
+      alt: "A white stucco home with a tile roof and fire-resistant planting, from Pillar's walkthrough",
+    },
     exhibit: {
       title: "Pillar",
       description: "Spatial AI to help homeowners get insurance in fire risk areas",
@@ -355,6 +361,21 @@ export const projects: Project[] = [
 ];
 
 export const projectBySlug = Object.fromEntries(projects.map((p) => [p.slug, p])) as Record<string, Project>;
+
+/** The image for a project's card: its cover, else its exhibit's image or video poster. */
+export function projectCover(project: Project): { src: string; alt: string } | null {
+  if (project.cover) return project.cover;
+  const media = project.exhibit?.media;
+  if (!media) return null;
+  return { src: media.kind === "image" ? media.src : media.poster, alt: media.alt };
+}
+
+/** Where a project's "read more" goes: its long-form page on this site, else its own site. */
+export function projectLink(project: Project): { href: string; label: string } | null {
+  if (project.caseStudy) return { href: `/${project.caseStudy.path}`, label: "Read the case study" };
+  const href = project.exhibit?.href ?? project.url;
+  return href ? { href, label: "Visit the project" } : null;
+}
 
 /** Hanging order of the 2D gallery, as on the Framer site: newest work first. */
 export const GALLERY_ORDER = [

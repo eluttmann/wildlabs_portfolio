@@ -22,10 +22,10 @@ export interface SplatWorld {
   groundOffset: number;
   /** Viewer position and look target in metres (y up, ground at 0). */
   camera: { position: Vec3; target: Vec3 };
-  /** Three orbs, one per region, placed in the world in metres. */
-  orbs: { slug: string; position: Vec3; size: number }[];
-  /** How far the camera may pull back from its target, in metres; defaults to 14. */
-  maxDistance?: number;
+  /** The project cards, placed in the world in metres (card centres; each card turns to face the visitor). */
+  cards: { slug: string; position: Vec3 }[];
+  /** How far the visitor may walk from the capture point, in metres; splats smear beyond it. Defaults to 7. */
+  walkRadius?: number;
   /**
    * A sharp 2:1 panorama drawn at infinity behind the splats: a full URL (Vercel Blob, store `wildlabs-worlds`;
    * upload with scripts/render/blob-put.mts) or a file name in the world's local asset folder (development only).
@@ -33,10 +33,22 @@ export interface SplatWorld {
   backdrop?: string;
 }
 
-const meadowOrbs: SplatWorld["orbs"] = [
-  { slug: "immersive-workspaces", position: [-3.2, 1.6, -7], size: 0.5 },
-  { slug: "pillar", position: [0, 1.9, -9], size: 0.5 },
-  { slug: "langgraph-studio", position: [3.4, 1.7, -7.5], size: 0.5 },
+/*
+ * Nine cards in three loose groups around the capture point, far enough apart that the visitor walks between them.
+ * Forward (−z) faces the photo's centre; El Capitan stands about 55° to the left, so that sightline stays open.
+ * Applications ahead (Pillar nearest, Millennial hidden behind it until you walk), Buildings to the left and back
+ * left, Infra to the right. Centres sit just above the capture eye height (about 1.1 m).
+ */
+const meadowCards: SplatWorld["cards"] = [
+  { slug: "pillar", position: [0.3, 1.25, -4.6] },
+  { slug: "marble", position: [-2.6, 1.3, -6.8] },
+  { slug: "ombi", position: [2.5, 1.3, -7] },
+  { slug: "millennial-entertainment", position: [0.2, 1.35, -9.6] },
+  { slug: "immersive-workspaces", position: [-6, 1.3, -1] },
+  { slug: "vr-design-reviews", position: [-6.2, 1.3, 1.8] },
+  { slug: "dbc-app", position: [-4.4, 1.3, 4.3] },
+  { slug: "langgraph-studio", position: [5.2, 1.3, -3] },
+  { slug: "autoprospector", position: [6.4, 1.3, 0.4] },
 ];
 
 /*
@@ -60,7 +72,7 @@ export const yosemitePhotoPlusV2: SplatWorld = {
   metricScale: 1.7705405950546265,
   groundOffset: 1.1282386779785156,
   camera: { position: [0, 1.6, 0], target: [0, 1.2, -10] },
-  orbs: meadowOrbs,
+  cards: meadowCards,
   backdrop:
     "https://zxnwq2jadfb7nyua.public.blob.vercel-storage.com/worlds/yosemite-meadow/backdrop-8k-e30vKpdVnFiwSuDBnevAUiNrUX4zwY.jpg",
 };
