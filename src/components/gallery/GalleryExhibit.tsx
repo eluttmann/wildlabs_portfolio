@@ -45,7 +45,7 @@ export function GalleryExhibit({ exhibit }: { exhibit: Exhibit }) {
 }
 
 /** Project pages open in place; outside sites open in a new tab. */
-function ExhibitLink({
+export function ExhibitLink({
   href,
   children,
   ...rest
@@ -70,7 +70,7 @@ function ExhibitLink({
   );
 }
 
-function Description({ exhibit: { description, descriptionLink } }: { exhibit: Exhibit }) {
+export function Description({ exhibit: { description, descriptionLink } }: { exhibit: Exhibit }) {
   const at = descriptionLink ? description.indexOf(descriptionLink.text) : -1;
   if (!descriptionLink || at < 0) return description;
   const end = at + descriptionLink.text.length;

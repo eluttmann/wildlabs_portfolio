@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { CameraControls } from "@react-three/drei";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { CameraControls, CameraControlsImpl } from "@react-three/drei";
 import {
   SparkRenderer,
   SplatEdit,
@@ -14,15 +14,17 @@ import {
 } from "@sparkjsdev/spark";
 import {
   ACESFilmicToneMapping,
+  Box3,
   EquirectangularReflectionMapping,
+  MathUtils,
   NoToneMapping,
   SRGBColorSpace,
   TextureLoader,
   Vector3,
 } from "three";
 import { projectBySlug } from "@/content/projects";
-import { Orb } from "@/components/lab/Orb";
 import type { Vec3 } from "@/lab/layouts";
+import { ProjectCard } from "./ProjectCard";
 import type { SplatRes, SplatWorld } from "./worlds";
 
 export type WorldStatus = "loading" | "ready" | "error";
@@ -31,6 +33,16 @@ interface SceneProps {
   world: SplatWorld;
   res: SplatRes;
   onStatus: (status: WorldStatus) => void;
+}
+
+export interface SplatWorldSceneProps {
+  world: SplatWorld;
+  onStatus: (status: WorldStatus) => void;
+  /** The card the camera is flying to, or null to walk. */
+  selected: string | null;
+  onSelect: (slug: string) => void;
+  /** The camera reached the selected card. */
+  onArrive: (slug: string) => void;
 }
 
 const RESOLUTIONS: SplatRes[] = ["100k", "150k", "500k", "full_res"];
@@ -130,18 +142,18 @@ const nextFrames = (n: number) =>
     tick(n);
   });
 
-/** Orbs sit at their centroid; the environment map is rendered from there. */
-function orbCentroid(world: SplatWorld) {
+/** The environment map is rendered from the cards' centroid, which sits near the capture point. */
+function cardCentroid(world: SplatWorld) {
   const c = new Vector3();
-  for (const o of world.orbs) c.add(new Vector3(...o.position));
-  return c.divideScalar(world.orbs.length);
+  for (const o of world.cards) c.add(new Vector3(...o.position));
+  return c.divideScalar(Math.max(1, world.cards.length));
 }
 
 /**
  * The Marble world as Gaussian splats. Marble SPZ files are OpenCV-framed (y down) in raw units:
  * rotate 180° about X, scale to metres, and lift by the ground offset so the meadow sits at y = 0.
- * Once loaded, the splats are rendered into an environment map so the glass orbs reflect the valley.
- * The orbs mount only after that, so they never appear in their own reflections.
+ * Once loaded, the splats are rendered into an environment map so the glass cards reflect the valley.
+ * The cards mount only after that, so they never appear in their own reflections.
  */
 function Splats({ world, res, upgrade, look, onStatus }: SceneProps & { upgrade: SplatRes; look: Look }) {
   const gl = useThree((s) => s.gl);
@@ -205,7 +217,7 @@ function Splats({ world, res, upgrade, look, onStatus }: SceneProps & { upgrade:
         if (cancelled) return;
         const envMap = await spark.renderEnvMap({
           scene,
-          worldCenter: orbCentroid(world),
+          worldCenter: cardCentroid(world),
           hideObjects: [],
           update: true,
         });
@@ -253,41 +265,229 @@ function Splats({ world, res, upgrade, look, onStatus }: SceneProps & { upgrade:
   );
 }
 
-function CameraRig({ world, selected }: { world: SplatWorld; selected: string | null }) {
-  const controls = useRef<ComponentRef<typeof CameraControls>>(null);
+/** First person: the orbit target sits this far ahead of the eye, so dragging turns the head in place. */
+const LOOK = 0.01;
+const WALK_SPEED = 1.6; // metres per second, an easy stroll
+const TURN_SPEED = 1.4; // radians per second for the arrow keys
+const WALK_SMOOTH = 0.7;
+const FLY_SMOOTH = 1.1; // the slower, theatrical move up to a card
+/** How far in front of a card the camera stops, in metres. */
+const CARD_STAND = 1.75;
 
+const MOVE_KEYS: Record<string, [forward: number, side: number, turn: number]> = {
+  KeyW: [1, 0, 0],
+  ArrowUp: [1, 0, 0],
+  KeyS: [-1, 0, 0],
+  ArrowDown: [-1, 0, 0],
+  KeyA: [0, -1, 0],
+  KeyD: [0, 1, 0],
+  ArrowLeft: [0, 0, 1],
+  ArrowRight: [0, 0, -1],
+};
+
+const tmpPos = new Vector3();
+const tmpTarget = new Vector3();
+
+/** The horizontal direction the camera faces, or null before the controls exist. */
+function facing(c: CameraControlsImpl | null) {
+  if (!c) return null;
+  c.getPosition(tmpPos);
+  c.getTarget(tmpTarget);
+  const f = tmpTarget.sub(tmpPos).setY(0);
+  return f.lengthSq() > 0 ? f.normalize() : null;
+}
+
+/**
+ * The visitor walks: drag to look around, W A S D or the arrow keys (or a trackpad scroll) to move, tap the meadow to
+ * walk there. Splat worlds hold up only near where the photo was taken, so walking stays inside `walkRadius`. Picking a
+ * card flies the camera up to it; deselecting flies back to where the visitor stood.
+ */
+function CameraRig({
+  world,
+  start,
+  selected,
+  onArrive,
+}: {
+  world: SplatWorld;
+  start: SplatWorld["camera"];
+  selected: string | null;
+  onArrive: (slug: string) => void;
+}) {
+  const controls = useRef<CameraControlsImpl>(null);
+  const gl = useThree((s) => s.gl);
+  const keys = useRef(new Set<string>());
+  const home = useRef<{ position: Vector3; target: Vector3 } | null>(null);
+  const flying = useRef(false);
+  /**
+   * Where a flight ends. camera-controls only reports "rest" once motion is below a hair, seconds after the move looks
+   * finished, so arrival is judged by distance instead: the project opens as the camera reaches the card.
+   */
+  const goal = useRef<{ position: Vector3; slug: string | null } | null>(null);
+  const radius = world.walkRadius ?? 7;
+  // A `?pitch=` review view needs to look straight up or down, past the usual tilt limits.
+  const [freeTilt] = useState(() => new URLSearchParams(window.location.search).has("pitch"));
+  const walkBounds = useMemo(
+    () => new Box3(new Vector3(-radius, -50, -radius), new Vector3(radius, 50, radius)),
+    [radius],
+  );
+
+  // Stand at the start pose, looking the same way, with the target just ahead of the eye.
   useEffect(() => {
     const c = controls.current;
     if (!c) return;
-    const orb = world.orbs.find((o) => o.slug === selected);
-    const [px, py, pz] = world.camera.position;
-    if (orb) {
-      // Push in from the viewer's side, stopping a couple of metres short of the orb.
-      const [x, y, z] = orb.position;
-      const dir = new Vector3(px - x, py - y, pz - z).normalize().multiplyScalar(2.4);
-      void c.setLookAt(x + dir.x, y + dir.y + 0.2, z + dir.z, x, y, z, true);
-    } else {
-      void c.setLookAt(px, py, pz, ...world.camera.target, true);
-    }
-  }, [world, selected]);
+    const [x, y, z] = start.position;
+    const d = new Vector3(...start.target).sub(new Vector3(x, y, z)).normalize().multiplyScalar(LOOK);
+    void c.setLookAt(x, y, z, x + d.x, y + d.y, z + d.z, false);
+    const { ACTION } = CameraControlsImpl;
+    c.mouseButtons.right = ACTION.NONE;
+    c.mouseButtons.middle = ACTION.NONE;
+    c.mouseButtons.wheel = ACTION.NONE;
+    c.touches.two = ACTION.NONE;
+    c.touches.three = ACTION.NONE;
+    // Negative speeds make a drag pull the view, as in a photo sphere.
+    c.azimuthRotateSpeed = -0.35;
+    c.polarRotateSpeed = -0.35;
+    c.setBoundary(walkBounds);
+  }, [start, walkBounds]);
 
-  // Splat worlds hold up near where the source photo was taken; keep the viewer close to it. A `?pitch=` review
-  // view needs to look straight up or down, past the usual tilt limits.
-  const [freeTilt] = useState(() => new URLSearchParams(window.location.search).has("pitch"));
+  /** Moves the eye (and the target with it), staying inside the walk radius. */
+  const walkBy = useCallback(
+    (dx: number, dz: number, smooth: boolean) => {
+      const c = controls.current;
+      if (!c || flying.current) return;
+      c.getTarget(tmpTarget);
+      let nx = tmpTarget.x + dx;
+      let nz = tmpTarget.z + dz;
+      const r = Math.hypot(nx, nz);
+      if (r > radius) {
+        nx *= radius / r;
+        nz *= radius / r;
+      }
+      void c.moveTo(nx, tmpTarget.y, nz, smooth);
+    },
+    [radius],
+  );
+
+  useEffect(() => {
+    const typing = (e: KeyboardEvent) =>
+      e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+    const down = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || typing(e) || !(e.code in MOVE_KEYS)) return;
+      keys.current.add(e.code);
+      e.preventDefault();
+    };
+    const up = (e: KeyboardEvent) => keys.current.delete(e.code);
+    const clear = () => keys.current.clear();
+    // A trackpad scroll walks forward or back.
+    const wheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const f = facing(controls.current);
+      if (!f) return;
+      const step = MathUtils.clamp(-e.deltaY * 0.004, -0.4, 0.4);
+      walkBy(f.x * step, f.z * step, true);
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", clear);
+    gl.domElement.addEventListener("wheel", wheel, { passive: false });
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", clear);
+      gl.domElement.removeEventListener("wheel", wheel);
+    };
+  }, [gl, walkBy]);
+
+  useFrame((_, dt) => {
+    const c = controls.current;
+    const g = goal.current;
+    if (c && g && c.getPosition(tmpPos).distanceTo(g.position) < (g.slug ? 0.25 : 0.05)) {
+      goal.current = null;
+      if (g.slug) {
+        onArrive(g.slug);
+      } else {
+        c.smoothTime = WALK_SMOOTH;
+        c.setBoundary(walkBounds);
+        flying.current = false;
+      }
+    }
+    if (!c || flying.current || selected || keys.current.size === 0) return;
+    let forward = 0;
+    let side = 0;
+    let turn = 0;
+    for (const k of keys.current) {
+      const [f, s, t] = MOVE_KEYS[k] ?? [0, 0, 0];
+      forward += f;
+      side += s;
+      turn += t;
+    }
+    if (turn) void c.rotate(turn * TURN_SPEED * dt, 0, false);
+    const f = facing(c);
+    if (!f || (!forward && !side)) return;
+    const step = WALK_SPEED * Math.min(dt, 0.05);
+    // Right of facing is (−z, x).
+    walkBy((f.x * forward - f.z * side) * step, (f.z * forward + f.x * side) * step, false);
+  });
+
+  // Fly up to the chosen card, then tell the page so it can open the project; fly home when it closes.
+  useEffect(() => {
+    const c = controls.current;
+    if (!c) return;
+    const card = selected ? world.cards.find((o) => o.slug === selected) : null;
+    if (card && selected) {
+      if (!home.current) home.current = { position: c.getPosition(new Vector3()), target: c.getTarget(new Vector3()) };
+      flying.current = true;
+      keys.current.clear();
+      c.setBoundary(); // a card may stand beyond the walk radius
+      c.smoothTime = FLY_SMOOTH;
+      const [x, y, z] = card.position;
+      const from = home.current.position;
+      const away = new Vector3(from.x - x, 0, from.z - z);
+      if (away.lengthSq() < 1e-6) away.set(0, 0, 1);
+      away.normalize().multiplyScalar(CARD_STAND);
+      const stand = new Vector3(x + away.x, y, z + away.z);
+      goal.current = { position: stand, slug: selected };
+      void c.setLookAt(stand.x, stand.y, stand.z, x, y, z, true);
+    } else if (!selected && home.current) {
+      const back = home.current;
+      home.current = null;
+      c.smoothTime = FLY_SMOOTH;
+      goal.current = { position: back.position, slug: null };
+      void c.setLookAt(...back.position.toArray(), ...back.target.toArray(), true);
+    }
+  }, [selected, world]);
+
+  /** Tap the meadow to walk there; a drag to look around doesn't count. */
+  const walkTo = (e: ThreeEvent<MouseEvent>) => {
+    const c = controls.current;
+    if (!c || e.delta > 6 || selected) return;
+    c.getPosition(tmpPos);
+    walkBy(e.point.x - tmpPos.x, e.point.z - tmpPos.z, true);
+  };
+
   return (
-    <CameraControls
-      ref={controls}
-      makeDefault
-      smoothTime={0.7}
-      minDistance={1}
-      maxDistance={world.maxDistance ?? 14}
-      minPolarAngle={freeTilt ? 0.02 : Math.PI * 0.3}
-      maxPolarAngle={freeTilt ? Math.PI - 0.02 : Math.PI * 0.56}
-    />
+    <>
+      <CameraControls
+        ref={controls}
+        makeDefault
+        smoothTime={WALK_SMOOTH}
+        minDistance={0}
+        maxDistance={Infinity}
+        dollyToCursor={false}
+        enabled={!selected}
+        minPolarAngle={freeTilt ? 0.02 : Math.PI * 0.3}
+        maxPolarAngle={freeTilt ? Math.PI - 0.02 : Math.PI * 0.64}
+      />
+      {/* An invisible floor to tap on: it writes no colour or depth, so the splats show through untouched. */}
+      <mesh rotation-x={-Math.PI / 2} onClick={walkTo}>
+        <circleGeometry args={[radius + 4, 48]} />
+        <meshBasicMaterial colorWrite={false} depthWrite={false} />
+      </mesh>
+    </>
   );
 }
 
-export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "res">) {
+export default function SplatWorldScene({ world, onStatus, selected, onSelect, onArrive }: SplatWorldSceneProps) {
   const [res] = useState(pickRes);
   const [ready, setReady] = useState(false);
   const report = useCallback(
@@ -297,10 +497,9 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
     },
     [onStatus],
   );
-  const [selected, setSelected] = useState<string | null>(null);
   const [look] = useState(pickLook);
   const [camera] = useState(() => pickView(world, look));
-  const viewed = useMemo(() => ({ ...world, camera }), [world, camera]);
+  const [lite] = useState(() => window.matchMedia("(max-width: 767px)").matches);
 
   return (
     <Canvas
@@ -308,7 +507,6 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
       // Spark recommends no MSAA: it doesn't improve splats and costs a lot of fill rate.
       gl={{ antialias: false, toneMapping: look.tone === "none" ? NoToneMapping : ACESFilmicToneMapping }}
       camera={{ position: camera.position, fov: look.fov, near: 0.05, far: 2000 }}
-      onPointerMissed={() => setSelected(null)}
     >
       {/* No scene background until the world loads: the transparent canvas shows the gallery white behind it. */}
       <ambientLight intensity={0.4} />
@@ -316,25 +514,23 @@ export default function SplatWorldScene({ world, onStatus }: Omit<SceneProps, "r
       <Splats world={world} res={res.first} upgrade={res.final} look={look} onStatus={report} />
 
       {ready &&
-        world.orbs.map((o, i) => {
+        world.cards.map((o, i) => {
           const project = projectBySlug[o.slug];
           if (!project) return null;
           return (
-            <Orb
+            <ProjectCard
               key={o.slug}
               project={project}
-              target={o.position}
-              size={o.size}
-              dimmed={false}
+              position={o.position}
               selected={selected === o.slug}
-              emphasized={false}
+              lite={lite}
               phase={i * 1.7}
-              onSelect={setSelected}
+              onSelect={onSelect}
             />
           );
         })}
 
-      <CameraRig world={viewed} selected={selected} />
+      <CameraRig world={world} start={camera} selected={selected} onArrive={onArrive} />
     </Canvas>
   );
 }
