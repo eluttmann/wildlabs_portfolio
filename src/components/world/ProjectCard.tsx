@@ -127,16 +127,10 @@ function paintFace(ctx: CanvasRenderingContext2D, project: Project, image: HTMLI
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = color.ink;
   ctx.font = `500 ${px(0.058)}px ${font.sans}`;
-  ctx.fillText(project.title, textX, titleY, px(IMAGE_W - 0.12));
+  ctx.fillText(project.title, textX, titleY, px(IMAGE_W - 0.04));
   ctx.fillStyle = color.ink2;
   ctx.font = `400 ${px(0.042)}px ${font.sans}`;
   ctx.fillText(project.role, textX, titleY + px(0.065), px(IMAGE_W - 0.04));
-
-  // The region's Kelly colour, as one quiet dot at the end of the title row.
-  ctx.fillStyle = regionColor[project.region];
-  ctx.beginPath();
-  ctx.arc(px(WIDTH - PAD - 0.035), titleY - px(0.02), px(0.017), 0, Math.PI * 2);
-  ctx.fill();
 }
 
 function useFaceTexture(project: Project) {
