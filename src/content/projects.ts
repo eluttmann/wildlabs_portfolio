@@ -381,7 +381,10 @@ export function projectLink(project: Project): { href: string; label: string } |
   return href ? { href, label: "Visit the project" } : null;
 }
 
-/** Hanging order of the 2D gallery, as on the Framer site: newest work first. */
+/**
+ * Hanging order of the 2D gallery, as on the Framer site: newest work first. Millennial Entertainment stays in the
+ * content but is left off the gallery and the 3D home (Nov 8, Eric).
+ */
 export const GALLERY_ORDER = [
   "pillar",
   "langgraph-studio",
@@ -389,7 +392,6 @@ export const GALLERY_ORDER = [
   "ombi",
   "autoprospector",
   "dbc-app",
-  "millennial-entertainment",
   "vr-design-reviews",
   "immersive-workspaces",
 ] as const;

@@ -34,16 +34,15 @@ export interface SplatWorld {
 }
 
 /*
- * Nine cards in three loose groups around the capture point, far enough apart that the visitor walks between them.
+ * Eight cards in three loose groups around the capture point, far enough apart that the visitor walks between them.
  * Forward (−z) faces the photo's centre; El Capitan stands about 55° to the left, so that sightline stays open.
- * Applications ahead (Pillar nearest, Millennial hidden behind it until you walk), Buildings to the left and back
- * left, Infra to the right. Centres sit just above the capture eye height (about 1.1 m).
+ * Applications ahead (Pillar nearest), Buildings to the left and back left, Infra to the right. Centres sit just above
+ * the capture eye height (about 1.1 m). Millennial Entertainment is left off the home (Nov 8, Eric).
  */
 const meadowCards: SplatWorld["cards"] = [
   { slug: "pillar", position: [0.3, 1.25, -4.6] },
   { slug: "marble", position: [-2.6, 1.3, -6.8] },
   { slug: "ombi", position: [2.5, 1.3, -7] },
-  { slug: "millennial-entertainment", position: [0.2, 1.35, -9.6] },
   { slug: "immersive-workspaces", position: [-6, 1.3, -1] },
   { slug: "vr-design-reviews", position: [-6.2, 1.3, 1.8] },
   { slug: "dbc-app", position: [-4.4, 1.3, 4.3] },
