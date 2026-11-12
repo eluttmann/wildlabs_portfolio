@@ -18,6 +18,8 @@ export default function AboutPage() {
     <>
       <GalleryNav compact />
       <main className="mx-auto grid w-[87vw] max-w-media gap-10 pt-8 pb-24 tablet:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] tablet:gap-16 tablet:pt-12 wide:pb-32">
+        {/* Phones crop the portrait to 4:3 so the name reaches the first screen; wider screens keep it whole and pin it
+            beside the text, so the left column never runs empty while the projects scroll past. */}
         <Image
           src={about.portrait.src}
           alt={about.portrait.alt}
@@ -25,13 +27,14 @@ export default function AboutPage() {
           height={about.portrait.height}
           sizes="(min-width: 810px) 40vw, 87vw"
           preload
-          className="w-full rounded-[20px] object-cover"
+          className="aspect-[4/3] w-full rounded-[20px] object-cover tablet:sticky tablet:top-8 tablet:aspect-auto tablet:self-start"
         />
         <div className="flex flex-col gap-6">
-          <header className="flex flex-col gap-3">
+          <header className="flex flex-col gap-2 tablet:gap-3">
             <h1 className="text-display-sm font-bold tablet:text-display">{about.name}</h1>
-            {/* Contact sits right under the name, so it's found without reading the whole page. */}
-            <ul aria-label="Contact" className="-ml-1.5 flex flex-wrap gap-1">
+            {/* Contact sits right under the name, so it's found without reading the whole page. Tap areas are 44 px on
+                phones (36 px with a pointer); the negative margin lines the first glyph up with the text edge. */}
+            <ul aria-label="Contact" className="-ml-3 flex flex-wrap tablet:-ml-2 tablet:gap-1">
               {about.links.map((l) => (
                 <li key={l.kind}>
                   <a
@@ -39,7 +42,7 @@ export default function AboutPage() {
                     {...outside(l.href)}
                     aria-label={l.label}
                     title={l.label}
-                    className="grid size-9 place-items-center rounded-full text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-ink"
+                    className="grid size-11 place-items-center rounded-full text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-ink tablet:size-9"
                   >
                     <ContactIcon kind={l.kind} className="size-5" />
                   </a>
@@ -49,7 +52,7 @@ export default function AboutPage() {
           </header>
           <p className="text-lede-sm text-ink-soft wide:text-lede">{about.intro}</p>
           <p className="text-body-sm text-ink-soft wide:text-body">{about.approach}</p>
-          <section aria-labelledby="about-projects" className="flex flex-col gap-3">
+          <section aria-labelledby="about-projects" className="mt-4 flex flex-col gap-3">
             <h2 id="about-projects" className="text-caption font-bold tracking-[0.02em] uppercase">
               {about.projectsLabel}
             </h2>
