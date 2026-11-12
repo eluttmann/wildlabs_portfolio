@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: `${about.name}: ${about.intro}`,
 };
 
+/** Outside links open in a new tab; email opens the mail app. */
+const outside = (href: string) => (href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {});
+
 /** Eric's bio, moved here from the Framer site: the portrait beside the story, in the gallery's slim frame. */
 export default function AboutPage() {
   return (
@@ -24,7 +27,19 @@ export default function AboutPage() {
           className="w-full rounded-[20px] object-cover"
         />
         <div className="flex flex-col gap-6">
-          <h1 className="text-display-sm font-bold tablet:text-display">{about.name}</h1>
+          <header className="flex flex-col gap-3">
+            <h1 className="text-display-sm font-bold tablet:text-display">{about.name}</h1>
+            {/* Contact sits right under the name, so it's found without reading the whole page. */}
+            <ul aria-label="Contact" className="flex flex-wrap gap-x-6 gap-y-2 text-caption font-bold tracking-[0.02em] uppercase">
+              {about.links.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} {...outside(l.href)} className="hover:underline">
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </header>
           <p className="text-lede-sm text-ink-soft wide:text-lede">{about.intro}</p>
           <p className="text-body-sm text-ink-soft wide:text-body">{about.approach}</p>
           <section aria-labelledby="about-projects" className="flex flex-col gap-3">
@@ -33,23 +48,20 @@ export default function AboutPage() {
             </h2>
             <ul className="flex list-disc flex-col gap-2 pl-5 text-body-sm text-ink-soft marker:text-ink-muted wide:text-body">
               {about.projects.map((p) => (
-                <li key={p}>{p}</li>
+                <li key={p.text}>
+                  {p.text}
+                  {p.link && (
+                    <>
+                      {" "}
+                      <a href={p.link.href} {...outside(p.link.href)} className="text-link hover:underline">
+                        {p.link.label}
+                      </a>
+                    </>
+                  )}
+                </li>
               ))}
             </ul>
           </section>
-          <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-caption font-bold tracking-[0.02em] uppercase">
-            {about.links.map((l) => (
-              <li key={l.label}>
-                <a
-                  href={l.href}
-                  {...(l.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="hover:underline"
-                >
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
         </div>
       </main>
     </>
