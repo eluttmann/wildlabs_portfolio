@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { ContactIcon } from "@/components/about/ContactIcon";
 import { GalleryNav } from "@/components/gallery/GalleryNav";
 import { about } from "@/content/about";
 
@@ -30,11 +31,17 @@ export default function AboutPage() {
           <header className="flex flex-col gap-3">
             <h1 className="text-display-sm font-bold tablet:text-display">{about.name}</h1>
             {/* Contact sits right under the name, so it's found without reading the whole page. */}
-            <ul aria-label="Contact" className="flex flex-wrap gap-x-6 gap-y-2 text-caption font-bold tracking-[0.02em] uppercase">
+            <ul aria-label="Contact" className="-ml-1.5 flex flex-wrap gap-1">
               {about.links.map((l) => (
-                <li key={l.label}>
-                  <a href={l.href} {...outside(l.href)} className="hover:underline">
-                    {l.label}
+                <li key={l.kind}>
+                  <a
+                    href={l.href}
+                    {...outside(l.href)}
+                    aria-label={l.label}
+                    title={l.label}
+                    className="grid size-9 place-items-center rounded-full text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-ink"
+                  >
+                    <ContactIcon kind={l.kind} className="size-5" />
                   </a>
                 </li>
               ))}
