@@ -4,18 +4,19 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
-  // The home page is 2D by default; `/?view=3d` serves the 3D world under the same URL. Before the
-  // filesystem, so it wins over the static `/` page.
+  // The home page is the 3D world by default (Nov 12, Eric); `/?view=2d` serves the 2D gallery under the same URL.
+  // Before the filesystem, so it wins over the static `/` page, which stays the 2D gallery. Old `/?view=3d` links
+  // still land on the world.
   async rewrites() {
     return {
-      beforeFiles: [{ source: "/", has: [{ type: "query", key: "view", value: "3d" }], destination: "/world" }],
+      beforeFiles: [{ source: "/", missing: [{ type: "query", key: "view", value: "2d" }], destination: "/world" }],
       afterFiles: [],
       fallback: [],
     };
   },
-  // The 2D gallery moved from /gallery to the home page.
+  // The 2D gallery moved from /gallery to the home page, and then behind `?view=2d`.
   async redirects() {
-    return [{ source: "/gallery", destination: "/", permanent: true }];
+    return [{ source: "/gallery", destination: "/?view=2d", permanent: true }];
   },
   turbopack: {
     rules: {

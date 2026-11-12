@@ -3,6 +3,11 @@
 import { useState, type FormEvent } from "react";
 
 /**
+ * The ask bar is hidden on every page for now (Nov 12, Eric). Set to true to bring it back everywhere at once.
+ */
+export const ASK_ENABLED = false;
+
+/**
  * The floating glass ask bar shared by the 2D gallery and the 3D world. `count` is how many projects
  * the last question matched, or null when nothing has been asked. The caller positions it.
  */
@@ -18,6 +23,7 @@ export function AskBar({
   className?: string;
 }) {
   const [query, setQuery] = useState("");
+  if (!ASK_ENABLED) return null;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
