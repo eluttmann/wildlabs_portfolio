@@ -101,7 +101,8 @@ function pickLook(): Look {
     tone: params.get("tone") === "aces" ? "aces" : "none",
     blur: num("blur", 0.3),
     focal: num("focal", 1),
-    fov: num("fov", 55),
+    // 60° (was 55° until Nov 12): a touch wider, so the arrival frame holds the headline above the cards.
+    fov: num("fov", 60),
     eye: params.get("eye") === "standing" ? "standing" : "capture",
     // Backdrop on by default for worlds that have one. three.js starts an equirectangular background 90° away from
     // Marble's panorama, hence the turn; a 25 m cull let the sharp photo replace every splat that would smear.
@@ -125,7 +126,9 @@ function pickView(world: SplatWorld, look: Look): SplatWorld["camera"] {
   const eyeY = look.eye === "capture" ? world.groundOffset : y;
   const eye: Vec3 = [x, eyeY, z - at];
   // `?pitch=<degrees>` tilts the view up (positive) or down, to review the sky overhead and the ground underfoot.
-  const rise = params.has("pitch") ? Math.tan((Number(params.get("pitch")) * Math.PI) / 180) * 10 : -0.4;
+  // By default the gaze is about level (1° up; it was 2° down until Nov 12): the cards and horizon sit lower in the
+  // frame, leaving sky for the arrival headline and less of the speckled ground underfoot.
+  const rise = params.has("pitch") ? Math.tan((Number(params.get("pitch")) * Math.PI) / 180) * 10 : 0.2;
   return { position: eye, target: [eye[0] - Math.sin(yaw) * 10, eyeY + rise, eye[2] - Math.cos(yaw) * 10] };
 }
 

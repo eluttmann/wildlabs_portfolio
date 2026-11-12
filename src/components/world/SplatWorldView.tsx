@@ -72,7 +72,7 @@ export function SplatWorldView({
       {intro && (
         <div
           aria-hidden={moved || status !== "ready"}
-          className={`pointer-events-none absolute inset-x-0 top-[17svh] flex justify-center px-6 transition-[opacity,translate] duration-700 ease-out motion-reduce:transition-none ${
+          className={`pointer-events-none absolute inset-x-0 top-[16svh] flex tablet:top-[12svh] justify-center px-6 transition-[opacity,translate] duration-700 ease-out motion-reduce:transition-none ${
             !moved && status === "ready" ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0"
           }`}
         >
