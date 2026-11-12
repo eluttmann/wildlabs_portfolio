@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ResetViewButton } from "@/components/world/ResetViewButton";
 
 /** The bio still lives on the Framer site until it moves into this repo. */
 const ABOUT_URL = "https://www.ericluttmann.com/about";
@@ -8,9 +9,9 @@ const ABOUT_URL = "https://www.ericluttmann.com/about";
 /**
  * The site's top bar, shared by 2D and 3D so nothing moves when the view toggles: the Wildey painting goes
  * home, ABOUT opens the bio, and `children` sits centred between them (the view toggle on the home page).
- * `compact` is the slim bar for reading pages, so the story starts on the first screen. `linkHome={false}`
- * makes the painting inert, for the 3D home, which has nowhere else to go. `className` lets 3D float the bar
- * over the world.
+ * `compact` is the slim bar for reading pages, so the story starts on the first screen. `linkHome={false}` is for
+ * the 3D home, which is already home: there the painting flies the camera back to the starting viewpoint instead.
+ * `className` lets 3D float the bar over the world.
  */
 export function GalleryNav({
   compact = false,
@@ -46,7 +47,7 @@ export function GalleryNav({
           {painting("", "")}
         </Link>
       ) : (
-        painting("Wild Labs", "justify-self-start")
+        <ResetViewButton className="justify-self-start">{painting("", "")}</ResetViewButton>
       )}
       <div>{children}</div>
       <a

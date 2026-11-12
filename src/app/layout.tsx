@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Wild Labs",
-  description: "Eric Luttmann: 3D and AI products that open access to knowledge and creation.",
+  description: "Eric Luttmann: 3D and AI products that open access to understanding and action.",
 };
 
 export const viewport: Viewport = {

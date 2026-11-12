@@ -43,6 +43,10 @@ export interface SplatWorldSceneProps {
   onSelect: (slug: string) => void;
   /** The camera reached the selected card. */
   onArrive: (slug: string) => void;
+  /** Bumped to fly the camera back to the starting viewpoint (the logo in the 3D top bar). */
+  resetSignal: number;
+  /** Called once, the first time the view leaves the starting viewpoint (turning, walking or opening a card). */
+  onMoved: () => void;
 }
 
 const RESOLUTIONS: SplatRes[] = ["100k", "150k", "500k", "full_res"];
@@ -307,12 +311,22 @@ function CameraRig({
   start,
   selected,
   onArrive,
+  resetSignal,
+  onMoved,
 }: {
   world: SplatWorld;
   start: SplatWorld["camera"];
   selected: string | null;
   onArrive: (slug: string) => void;
+  resetSignal: number;
+  onMoved: () => void;
 }) {
+  const moved = useRef(false);
+  const startEye = useMemo(() => new Vector3(...start.position), [start]);
+  const startDir = useMemo(
+    () => new Vector3(...start.target).sub(new Vector3(...start.position)).setY(0).normalize(),
+    [start],
+  );
   const controls = useRef<CameraControlsImpl>(null);
   const gl = useThree((s) => s.gl);
   const keys = useRef(new Set<string>());
@@ -400,6 +414,15 @@ function CameraRig({
 
   useFrame((_, dt) => {
     const c = controls.current;
+    // The first real move away from the start (20 cm, or about 4° of turn) retires the opening headline.
+    if (c && !moved.current) {
+      const f = facing(c);
+      const away = c.getPosition(tmpPos).distanceTo(startEye) > 0.2;
+      if (away || (f && f.dot(startDir) < 0.9976)) {
+        moved.current = true;
+        onMoved();
+      }
+    }
     const g = goal.current;
     if (c && g && c.getPosition(tmpPos).distanceTo(g.position) < (g.slug ? 0.25 : 0.05)) {
       goal.current = null;
@@ -457,6 +480,22 @@ function CameraRig({
     }
   }, [selected, world]);
 
+  // Back to the starting viewpoint: the same smooth flight, ending where and how the visitor arrived. Declared after the
+  // card flight so it wins when both fire together (closing a project and resetting in one click).
+  useEffect(() => {
+    const c = controls.current;
+    if (!c || !resetSignal) return;
+    home.current = null;
+    keys.current.clear();
+    flying.current = true;
+    c.setBoundary();
+    c.smoothTime = FLY_SMOOTH;
+    const [x, y, z] = start.position;
+    const d = new Vector3(...start.target).sub(new Vector3(x, y, z)).normalize().multiplyScalar(LOOK);
+    goal.current = { position: new Vector3(x, y, z), slug: null };
+    void c.setLookAt(x, y, z, x + d.x, y + d.y, z + d.z, true);
+  }, [resetSignal, start]);
+
   /** Tap the meadow to walk there; a drag to look around doesn't count. */
   const walkTo = (e: ThreeEvent<MouseEvent>) => {
     const c = controls.current;
@@ -487,7 +526,15 @@ function CameraRig({
   );
 }
 
-export default function SplatWorldScene({ world, onStatus, selected, onSelect, onArrive }: SplatWorldSceneProps) {
+export default function SplatWorldScene({
+  world,
+  onStatus,
+  selected,
+  onSelect,
+  onArrive,
+  resetSignal,
+  onMoved,
+}: SplatWorldSceneProps) {
   const [res] = useState(pickRes);
   const [ready, setReady] = useState(false);
   const report = useCallback(
@@ -530,7 +577,14 @@ export default function SplatWorldScene({ world, onStatus, selected, onSelect, o
           );
         })}
 
-      <CameraRig world={world} start={camera} selected={selected} onArrive={onArrive} />
+      <CameraRig
+        world={world}
+        start={camera}
+        selected={selected}
+        onArrive={onArrive}
+        resetSignal={resetSignal}
+        onMoved={onMoved}
+      />
     </Canvas>
   );
 }
