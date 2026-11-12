@@ -47,9 +47,25 @@ export interface Project {
   /** How the project hangs in the 2D gallery (the home page). */
   exhibit?: Exhibit;
   /** The image on the project's glass card in the 3D world; without one, the card uses the exhibit's image or poster. */
-  cover?: { src: string; alt: string };
+  cover?: ProjectCover;
   /** Long-form project page; its gallery exhibit links there. */
   caseStudy?: CaseStudy;
+}
+
+/** Landscape work (sites, renders, photos) shows at 16:9; portrait work (mobile apps) at 1:2. */
+export type CoverFormat = "landscape" | "portrait";
+
+/**
+ * What a project's glass card and window show. `src` is the still (and the video's placeholder); `video` plays on the
+ * card while the visitor is near or facing it. Content only, never a device mockup: the glass is the frame.
+ */
+export interface ProjectCover {
+  src: string;
+  alt: string;
+  /** Defaults to landscape. */
+  format?: CoverFormat;
+  /** A muted, looping clip in the same frame as the still (H.264 MP4, no audio). */
+  video?: string;
 }
 
 /** Media sizes are the desktop display size in CSS px; smaller screens scale them down. */
@@ -224,6 +240,13 @@ export const projects: Project[] = [
     thesis: { spatialToAI: -0.1, creationToKnowledge: -0.45 },
     location: { lat: 37.76, lon: -122.42, label: "Placeholder", confirmed: false },
     keywords: ["video", "preview", "experience", "founder", "startup", "media", "go-to-market"],
+    cover: {
+      src: "/projects/ombi/poster.webp",
+      alt: "Ombi's app: browsing San Francisco restaurants and bars through short video previews",
+      format: "portrait",
+      // The raw screen recording (220824_ombi_portfolio.mp4), status bar and home indicator cropped, 640×1280.
+      video: "/projects/ombi/card.mp4",
+    },
     exhibit: {
       title: "Ombi",
       description: "Preview experiences through video",
@@ -367,7 +390,7 @@ export const projects: Project[] = [
 export const projectBySlug = Object.fromEntries(projects.map((p) => [p.slug, p])) as Record<string, Project>;
 
 /** The image for a project's card: its cover, else its exhibit's image or video poster. */
-export function projectCover(project: Project): { src: string; alt: string } | null {
+export function projectCover(project: Project): ProjectCover | null {
   if (project.cover) return project.cover;
   const media = project.exhibit?.media;
   if (!media) return null;

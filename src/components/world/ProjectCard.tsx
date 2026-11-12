@@ -10,30 +10,49 @@ import {
   ShapeGeometry,
   SRGBColorSpace,
   Vector3,
+  VideoTexture,
   type Group,
+  type Mesh,
 } from "three";
-import { projectCover, type Project } from "@/content/projects";
+import { projectCover, type CoverFormat, type Project } from "@/content/projects";
 import type { Vec3 } from "@/lab/layouts";
 import { color, font, regionColor } from "@/design/tokens";
 
 /*
  * A floating glass card, after visionOS windows: a frosted, glossy slab with deep rounded corners, the project's
- * image inset with concentric corners, and its title and role set on the glass below. Sizes are metres.
+ * image (or video) inset with concentric corners, and its title and role set on the glass below. Sizes are metres.
+ *
+ * The card takes the shape of its content. Landscape work (sites, renders, photos) gets a 3:2 card around a 16:9
+ * image; portrait work (mobile apps) gets a tall card around a 1:2 frame. Both formats keep about the same area, the
+ * same corner radius, margins and text strip, and hang on the same centre line, so they read as one family.
  */
-// Landscape, about 3:2 overall (1.4 × 0.94 m), around a 16:9 image: the shape of screens and video, so product shots
-// and project videos fit without heavy cropping.
-const WIDTH = 1.4;
 const PAD = 0.045;
-const IMAGE_W = WIDTH - 2 * PAD;
-const IMAGE_H = (IMAGE_W * 9) / 16;
 const TEXT_H = 0.16;
-const HEIGHT = PAD + IMAGE_H + TEXT_H;
-const RADIUS = 0.13; // about a tenth of the width, for deep visionOS-style corners
+const RADIUS = 0.13; // the same on every card, as visionOS keeps one corner radius across window sizes
 const IMAGE_RADIUS = RADIUS - PAD; // concentric with the card's corner
 const DEPTH = 0.016;
 const BEVEL = 0.014;
+const FACE_Z = DEPTH / 2 + BEVEL + 0.001;
 /** Face texture resolution, in pixels per metre. */
 const PX = 1200;
+
+interface CardSize {
+  width: number;
+  height: number;
+  imageW: number;
+  imageH: number;
+}
+
+function cardSize(width: number, imageAspect: number): CardSize {
+  const imageW = width - 2 * PAD;
+  const imageH = imageW / imageAspect;
+  return { width, height: PAD + imageH + TEXT_H, imageW, imageH };
+}
+
+const SIZES: Record<CoverFormat, CardSize> = {
+  landscape: cardSize(1.4, 16 / 9), // 1.4 × 0.94 m
+  portrait: cardSize(0.8, 1 / 2), // 0.8 × 1.63 m
+};
 
 function roundedRect(w: number, h: number, r: number) {
   const s = new Shape();
@@ -52,8 +71,8 @@ function roundedRect(w: number, h: number, r: number) {
 }
 
 /** The glass body: the card outline extruded, with a bevel that rounds its rim. */
-function glassGeometry() {
-  const g = new ExtrudeGeometry(roundedRect(WIDTH, HEIGHT, RADIUS), {
+function glassGeometry({ width, height }: CardSize) {
+  const g = new ExtrudeGeometry(roundedRect(width, height, RADIUS), {
     depth: DEPTH,
     bevelEnabled: true,
     bevelThickness: BEVEL,
@@ -65,23 +84,26 @@ function glassGeometry() {
   return g;
 }
 
-/** The front face, with UVs spanning the card so the face texture maps edge to edge. */
-function faceGeometry(): ShapeGeometry {
-  const g = new ShapeGeometry(roundedRect(WIDTH, HEIGHT, RADIUS), 24);
+/** A flat rounded rectangle with UVs spanning it edge to edge (the face texture, or the video frame). */
+function planeGeometry(w: number, h: number, r: number): ShapeGeometry {
+  const g = new ShapeGeometry(roundedRect(w, h, r), 24);
   const pos = g.attributes.position;
   const uv = g.attributes.uv;
-  for (let i = 0; i < pos.count; i++) {
-    uv.setXY(i, (pos.getX(i) + WIDTH / 2) / WIDTH, (pos.getY(i) + HEIGHT / 2) / HEIGHT);
-  }
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + w / 2) / w, (pos.getY(i) + h / 2) / h);
   uv.needsUpdate = true;
   return g;
 }
 
-/** Every card has the same shape, so the two geometries are built once and shared for the page's lifetime. */
-let shared: { glass: ExtrudeGeometry; face: ShapeGeometry } | null = null;
-function cardGeometry() {
-  shared ??= { glass: glassGeometry(), face: faceGeometry() };
-  return shared;
+/** Cards of one format share their geometries, built once for the page's lifetime. */
+const shared: Partial<Record<CoverFormat, { glass: ExtrudeGeometry; face: ShapeGeometry; media: ShapeGeometry }>> = {};
+function cardGeometry(format: CoverFormat) {
+  const size = SIZES[format];
+  shared[format] ??= {
+    glass: glassGeometry(size),
+    face: planeGeometry(size.width, size.height, RADIUS),
+    media: planeGeometry(size.imageW, size.imageH, IMAGE_RADIUS),
+  };
+  return shared[format];
 }
 
 /** Tells three.js to re-upload a canvas texture after it was repainted. */
@@ -95,7 +117,7 @@ function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: n
 }
 
 /** Paints the frost wash, the image (cover-fitted) and the title and role. */
-function paintFace(ctx: CanvasRenderingContext2D, project: Project, image: HTMLImageElement | null) {
+function paintFace(ctx: CanvasRenderingContext2D, project: Project, size: CardSize, image: HTMLImageElement | null) {
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
   const px = (m: number) => m * PX;
@@ -108,8 +130,8 @@ function paintFace(ctx: CanvasRenderingContext2D, project: Project, image: HTMLI
 
   const ix = px(PAD);
   const iy = px(PAD);
-  const iw = px(IMAGE_W);
-  const ih = px(IMAGE_H);
+  const iw = px(size.imageW);
+  const ih = px(size.imageH);
   ctx.save();
   roundRectPath(ctx, ix, iy, iw, ih, px(IMAGE_RADIUS));
   ctx.clip();
@@ -125,32 +147,33 @@ function paintFace(ctx: CanvasRenderingContext2D, project: Project, image: HTMLI
   ctx.restore();
 
   const textX = px(PAD + 0.02);
+  const maxW = px(size.imageW - 0.04);
   const titleY = iy + ih + px(0.075);
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = color.ink;
   ctx.font = `500 ${px(0.058)}px ${font.sans}`;
-  ctx.fillText(project.title, textX, titleY, px(IMAGE_W - 0.04));
+  ctx.fillText(project.title, textX, titleY, maxW);
   ctx.fillStyle = color.ink2;
   ctx.font = `400 ${px(0.042)}px ${font.sans}`;
-  ctx.fillText(project.role, textX, titleY + px(0.058), px(IMAGE_W - 0.04));
+  ctx.fillText(project.role, textX, titleY + px(0.058), maxW);
 }
 
-function useFaceTexture(project: Project) {
+function useFaceTexture(project: Project, size: CardSize) {
   const invalidate = useThree((s) => s.invalidate);
   const anisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
   const { texture, ctx } = useMemo(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(WIDTH * PX);
-    canvas.height = Math.round(HEIGHT * PX);
+    canvas.width = Math.round(size.width * PX);
+    canvas.height = Math.round(size.height * PX);
     const t = new CanvasTexture(canvas);
     t.colorSpace = SRGBColorSpace;
     t.anisotropy = Math.min(8, anisotropy);
     return { texture: t, ctx: canvas.getContext("2d") };
-  }, [anisotropy]);
+  }, [anisotropy, size]);
 
   useEffect(() => {
     if (!ctx) return;
-    paintFace(ctx, project, null);
+    paintFace(ctx, project, size, null);
     markDirty(texture);
     const cover = projectCover(project);
     if (!cover) return;
@@ -159,7 +182,7 @@ function useFaceTexture(project: Project) {
     img.decoding = "async";
     img.onload = () => {
       if (!live) return;
-      paintFace(ctx, project, img);
+      paintFace(ctx, project, size, img);
       markDirty(texture);
       invalidate();
     };
@@ -167,11 +190,61 @@ function useFaceTexture(project: Project) {
     return () => {
       live = false;
     };
-  }, [ctx, project, texture, invalidate]);
+  }, [ctx, project, size, texture, invalidate]);
 
   useEffect(() => () => texture.dispose(), [texture]);
   return texture;
 }
+
+/*
+ * A muted, looping video for the card's frame. It loads nothing until it first plays, plays only while the visitor is
+ * near the card or facing it, and the still painted on the glass shows whenever it is paused.
+ */
+function makeVideo() {
+  const v = document.createElement("video");
+  v.muted = true;
+  v.loop = true;
+  v.playsInline = true;
+  v.preload = "none";
+  v.crossOrigin = "anonymous";
+  return v;
+}
+
+function startVideo(video: HTMLVideoElement, src: string) {
+  if (!video.getAttribute("src")) video.src = src;
+  video.play().catch(() => {}); // Autoplay can be refused (Low Power Mode); the still stays.
+}
+
+function stopVideo(video: HTMLVideoElement) {
+  video.pause();
+}
+
+function releaseVideo(video: HTMLVideoElement, texture: VideoTexture) {
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+  texture.dispose();
+}
+
+function useCardVideo(src: string | undefined) {
+  const clip = useMemo(() => {
+    if (!src) return null;
+    const video = makeVideo();
+    const texture = new VideoTexture(video);
+    texture.colorSpace = SRGBColorSpace;
+    return { video, texture, src };
+  }, [src]);
+  useEffect(() => (clip ? () => releaseVideo(clip.video, clip.texture) : undefined), [clip]);
+  return clip;
+}
+
+/** Play when within this many metres of the card… */
+const NEAR = 5;
+/** …or when facing it (cosine of the angle off the view direction), up to this far away. */
+const FACING_COS = 0.87; // about 30°
+const FACING_RANGE = 12;
+/** Hysteresis, so the video doesn't stutter on the threshold: a playing video keeps going a little past it. */
+const KEEP = 0.9;
 
 interface ProjectCardProps {
   project: Project;
@@ -184,16 +257,35 @@ interface ProjectCardProps {
 }
 
 const toCamera = new Vector3();
+const forward = new Vector3();
 const local = new Vector3();
 
 export function ProjectCard({ project, position, selected, lite, phase, onSelect }: ProjectCardProps) {
   const root = useRef<Group>(null);
   const body = useRef<Group>(null);
+  const mediaMesh = useRef<Mesh>(null);
+  const playing = useRef(false);
   const [hovered, setHovered] = useState(false);
   const tilt = useRef({ x: 0, y: 0 });
-  const { glass, face } = cardGeometry();
-  const texture = useFaceTexture(project);
+  const cover = projectCover(project);
+  const format: CoverFormat = cover?.format ?? "landscape";
+  const size = SIZES[format];
+  const { glass, face, media } = cardGeometry(format);
+  const texture = useFaceTexture(project, size);
+  const clip = useCardVideo(cover?.video);
   const tint = regionColor[project.region];
+
+  // A hidden tab pauses the video; the frame loop starts it again when the visitor comes back.
+  useEffect(() => {
+    if (!clip) return;
+    const onVisibility = () => {
+      if (!document.hidden) return;
+      playing.current = false;
+      stopVideo(clip.video);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [clip]);
 
   useFrame((state, dt) => {
     const g = root.current;
@@ -213,13 +305,31 @@ export function ProjectCard({ project, position, selected, lite, phase, onSelect
     b.rotation.y = MathUtils.damp(b.rotation.y, tilt.current.y, 6, dt);
     const s = hovered && !selected ? 1.04 : 1;
     b.scale.setScalar(MathUtils.damp(b.scale.x, s, 6, dt));
+
+    if (clip && !document.hidden) {
+      const distance = toCamera.length();
+      state.camera.getWorldDirection(forward);
+      const facing = -forward.dot(toCamera) / Math.max(distance, 1e-6);
+      const slack = playing.current ? 1 / KEEP : 1;
+      const want =
+        selected ||
+        distance < NEAR * slack ||
+        (distance < FACING_RANGE * slack && facing > FACING_COS * (playing.current ? KEEP : 1));
+      if (want !== playing.current) {
+        playing.current = want;
+        if (want) startVideo(clip.video, clip.src);
+        else stopVideo(clip.video);
+      }
+      // Show the moving frame only once it has a picture; otherwise the still on the glass shows through.
+      if (mediaMesh.current) mediaMesh.current.visible = playing.current && clip.video.readyState >= 2;
+    }
   });
 
   const onMove = (e: ThreeEvent<PointerEvent>) => {
     const b = body.current;
     if (!b) return;
     b.worldToLocal(local.copy(e.point));
-    tilt.current = { x: -(local.y / HEIGHT) * 0.14, y: (local.x / WIDTH) * 0.18 };
+    tilt.current = { x: -(local.y / size.height) * 0.14, y: (local.x / size.width) * 0.18 };
   };
 
   return (
@@ -269,9 +379,19 @@ export function ProjectCard({ project, position, selected, lite, phase, onSelect
             />
           )}
         </mesh>
-        <mesh geometry={face} position-z={DEPTH / 2 + BEVEL + 0.001}>
+        <mesh geometry={face} position-z={FACE_Z}>
           <meshBasicMaterial map={texture} transparent toneMapped={false} />
         </mesh>
+        {clip && (
+          <mesh
+            ref={mediaMesh}
+            geometry={media}
+            visible={false}
+            position={[0, size.height / 2 - PAD - size.imageH / 2, FACE_Z + 0.001]}
+          >
+            <meshBasicMaterial map={clip.texture} toneMapped={false} />
+          </mesh>
+        )}
       </group>
     </group>
   );

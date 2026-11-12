@@ -17,6 +17,7 @@ export function ProjectWindow({ project, onClose }: { project: Project; onClose:
   const [shown, setShown] = useState(false);
   const closeButton = useRef<HTMLButtonElement>(null);
   const cover = projectCover(project);
+  const portrait = cover?.format === "portrait";
   const link = projectLink(project);
   const title = project.exhibit?.title ?? project.title;
   const credits = project.exhibit?.credits ?? project.role;
@@ -49,16 +50,41 @@ export function ProjectWindow({ project, onClose }: { project: Project; onClose:
     >
       <article
         onClick={(e) => e.stopPropagation()}
-        className={`relative max-h-[calc(100dvh-32px)] w-full max-w-[880px] overflow-y-auto rounded-[40px] bg-paper/60 p-3 shadow-float ring-1 ring-paper/70 backdrop-blur-2xl backdrop-saturate-150 transition duration-[380ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] tablet:p-4 ${
-          shown ? "translate-y-0 scale-100" : "translate-y-3 scale-[0.94]"
-        }`}
+        className={`relative max-h-[calc(100dvh-32px)] overflow-y-auto rounded-[40px] bg-paper/60 p-3 shadow-float ring-1 ring-paper/70 backdrop-blur-2xl backdrop-saturate-150 transition duration-[380ms] ease-[cubic-bezier(0.2,0.8,0.2,1)] tablet:p-4 ${
+          portrait ? "w-fit max-w-full" : "w-full max-w-[880px]"
+        } ${shown ? "translate-y-0 scale-100" : "translate-y-3 scale-[0.94]"}`}
       >
         {cover && (
-          <div className="relative aspect-video w-full overflow-hidden rounded-[28px] bg-gallery-shade">
-            <Image src={cover.src} alt={cover.alt} fill sizes="(min-width: 920px) 856px, 100vw" className="object-cover" />
+          // Portrait work sets the window's width from its height, so the glass frame fits the content.
+          <div
+            className={`relative overflow-hidden rounded-[28px] bg-gallery-shade ${
+              portrait ? "aspect-[1/2] h-[min(60dvh,720px)] max-w-full" : "aspect-video w-full"
+            }`}
+          >
+            {cover.video ? (
+              <video
+                src={cover.video}
+                poster={cover.src}
+                aria-label={cover.alt}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 size-full object-cover"
+              />
+            ) : (
+              <Image
+                src={cover.src}
+                alt={cover.alt}
+                fill
+                sizes={portrait ? "360px" : "(min-width: 920px) 856px, 100vw"}
+                className="object-cover"
+              />
+            )}
           </div>
         )}
-        <div className="px-3 pb-3 pt-5 tablet:px-5 tablet:pb-5 tablet:pt-6">
+        {/* In a portrait window the text wraps to the media's width instead of widening the glass. */}
+        <div className={`px-3 pb-3 pt-5 tablet:px-5 tablet:pb-5 tablet:pt-6 ${portrait ? "w-0 min-w-full" : ""}`}>
           <h2 id="project-window-title" className="text-heading font-medium text-ink">
             {title}
           </h2>
