@@ -1,3 +1,5 @@
+import type { ContactKind } from "@/components/about/ContactIcon";
+
 /**
  * The About page copy (Eric, Nov 12). Project lines keep Eric's wording, with the first word capitalised for the list;
  * a project with `link` shows that link after its text.
@@ -27,12 +29,13 @@ export const about = {
     { text: "Stanford University advisor on 3D workflows" },
     { text: "Built VR models & led architectural design reviews on $300M buildings" },
   ] as { text: string; link?: { label: string; href: string } }[],
+  // Shown as icons under the name, LinkedIn first (Eric, Nov 12); `label` is what screen readers announce.
   links: [
-    { label: "Email", href: "mailto:ericluttmann3@gmail.com" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/in/luttmann/" },
-    { label: "Instagram", href: "https://www.instagram.com/eric_luttmann" },
-    { label: "Twitter", href: "https://twitter.com/ericluttmann" },
-  ],
+    { kind: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/luttmann/" },
+    { kind: "email", label: "Email", href: "mailto:ericluttmann3@gmail.com" },
+    { kind: "instagram", label: "Instagram", href: "https://www.instagram.com/eric_luttmann" },
+    { kind: "x", label: "X (Twitter)", href: "https://twitter.com/ericluttmann" },
+  ] as { kind: ContactKind; label: string; href: string }[],
   portrait: {
     src: "/about/eric.webp",
     alt: "Eric in a wetsuit, waving from the water beside his surfboard",
