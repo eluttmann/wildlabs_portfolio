@@ -40,7 +40,7 @@ export function CaseStudyPage({ path }: { path: string }) {
             <span className="block text-caption-sm text-ink-muted wide:text-caption">Next project</span>
             <span className="text-display-sm font-bold group-hover:underline wide:text-display">{next.title}</span>
           </Link>
-          <Link href="/"className="text-caption font-bold tracking-[0.02em] uppercase hover:underline">
+          <Link href="/?view=2d" className="text-caption font-bold tracking-[0.02em] uppercase hover:underline">
             All work
           </Link>
         </nav>

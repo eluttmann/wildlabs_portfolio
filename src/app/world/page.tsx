@@ -5,13 +5,14 @@ import { SplatWorldView } from "@/components/world/SplatWorldView";
 import { homeWorld } from "@/components/world/worlds";
 
 export const metadata: Metadata = {
-  title: "Wild Labs: 3D",
+  title: "Wild Labs",
+  description: "Eric Luttmann's work as glass cards in El Capitan Meadow: 3D and AI products that open access to knowledge and creation.",
 };
 
 /**
- * The home page in 3D: the home world (El Capitan Meadow) with the project orbs. Visitors reach it as `/?view=3d`,
- * rewritten here in next.config.ts. The world's settings live in src/components/world/worlds.ts, shared with the
- * /spikes/yosemite workbench; the Structure Lab that used to live here is at /structure.
+ * The home page, in 3D by default: the home world (El Capitan Meadow) with the project cards. Visitors reach it at
+ * `/`, rewritten here in next.config.ts (`/?view=2d` is the gallery). The world's settings live in
+ * src/components/world/worlds.ts, shared with the /spikes/yosemite workbench; the Structure Lab is at /structure.
  */
 export default function WorldPage() {
   return (

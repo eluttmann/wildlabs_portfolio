@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * The home page in 2D, the default view: the same projects as the 3D world, hung as a scroll on white
- * walls. `/?view=3d` is rewritten to the 3D world (next.config.ts), so this page stays static.
+ * The home page in 2D: the same projects as the 3D world, hung as a scroll on white walls. Visitors reach it as
+ * `/?view=2d`; a plain `/` is rewritten to the 3D world (next.config.ts), so this page stays static.
  */
 export default function HomePage() {
   const exhibits = GALLERY_ORDER.flatMap((slug) => {

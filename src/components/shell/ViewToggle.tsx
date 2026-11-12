@@ -5,8 +5,8 @@ import Link, { useLinkStatus } from "next/link";
 export type View = "2d" | "3d";
 
 const VIEWS = [
-  { id: "2d", label: "2D", href: "/" },
-  { id: "3d", label: "3D", href: "/?view=3d" },
+  { id: "2d", label: "2D", href: "/?view=2d" },
+  { id: "3d", label: "3D", href: "/" },
 ] as const;
 
 /**
