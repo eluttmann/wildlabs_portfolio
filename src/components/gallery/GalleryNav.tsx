@@ -3,8 +3,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ResetViewButton } from "@/components/world/ResetViewButton";
 
-/** The bio still lives on the Framer site until it moves into this repo. */
-const ABOUT_URL = "https://www.ericluttmann.com/about";
+/** The bio page (src/app/(2d)/about), moved here from the Framer site on Nov 12. */
+const ABOUT_URL = "/about";
 
 /**
  * The site's top bar, shared by 2D and 3D so nothing moves when the view toggles: the Wildey painting goes
@@ -50,12 +50,12 @@ export function GalleryNav({
         <ResetViewButton className="justify-self-start">{painting("", "")}</ResetViewButton>
       )}
       <div>{children}</div>
-      <a
+      <Link
         href={ABOUT_URL}
         className={`justify-self-end font-bold hover:underline ${compact ? "text-caption tracking-[0.02em]" : "text-[20px] leading-[1.6]"}`}
       >
         ABOUT
-      </a>
+      </Link>
     </header>
   );
 }
