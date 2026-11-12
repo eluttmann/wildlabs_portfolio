@@ -3,6 +3,7 @@ import { ExhibitFrame, GalleryAsk } from "@/components/gallery/GalleryAsk";
 import { GalleryExhibit } from "@/components/gallery/GalleryExhibit";
 import { GalleryHero } from "@/components/gallery/GalleryHero";
 import { GalleryNav } from "@/components/gallery/GalleryNav";
+import { ASK_ENABLED } from "@/components/shell/AskBar";
 import { ViewToggle } from "@/components/shell/ViewToggle";
 import { GALLERY_ORDER, projectBySlug } from "@/content/projects";
 
@@ -29,8 +30,8 @@ export default function HomePage() {
       <GalleryNav>
         <ViewToggle current="2d" />
       </GalleryNav>
-      {/* Bottom room so the floating ask bar never sits on the last exhibit. */}
-      <main className="pb-28">
+      {/* Bottom room so the floating ask bar never sits on the last exhibit (none while the bar is hidden). */}
+      <main className={ASK_ENABLED ? "pb-28" : undefined}>
         <GalleryHero />
       <section className="flex min-h-svh items-center justify-center pt-[59px] tablet:min-h-[600px] tablet:px-10 tablet:pt-[216px]">
         <h2 className="w-[80%] space-y-[1.1em] text-[28px] leading-[1.1] font-medium tablet:w-[73%] tablet:text-[48px]">

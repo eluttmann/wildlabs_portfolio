@@ -19,7 +19,7 @@ export function ViewToggle({ current, className = "" }: { current: View; classNa
     current === "2d" ? "translate-x-0 group-has-[[data-pending]]:translate-x-full" : "translate-x-full group-has-[[data-pending]]:translate-x-0";
 
   return (
-    <nav aria-label="View" className={`rounded-full bg-(image:--rim-knurl) p-[1.5px] shadow-rim ${className}`}>
+    <nav aria-label="View" className={`rounded-full bg-(image:--rim-knurl) p-[1.5px] shadow-rim text-shadow-none ${className}`}>
       <div className="group relative grid grid-cols-2 rounded-full bg-(image:--gloss-track) p-[3px] shadow-track">
         <span
           aria-hidden

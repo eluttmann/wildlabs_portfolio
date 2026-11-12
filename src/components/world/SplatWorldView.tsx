@@ -42,7 +42,7 @@ export function SplatWorldView({ world, children }: { world: SplatWorld; childre
           {message}
         </div>
       )}
-      <div className="pointer-events-none absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.16em] text-ink">
+      <div className="pointer-events-none absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.16em] text-paper text-shadow-sm">
         {world.label}
       </div>
       {/* The cards are drawn in WebGL; screen-reader and keyboard visitors open the same projects from this list. */}
